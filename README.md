@@ -1,70 +1,69 @@
-# Getting Started with Create React App
+# Your React Extension
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Description
 
-## Available Scripts
+This is a React extension designed to [provide a brief description of what your extension does].
 
-In the project directory, you can run:
+## How to Run Locally
 
-### `npm start`
+1. Clone the repository to your local machine:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+   ```bash
+   git clone https://github.com/your-username/your-react-extension.git
+   ```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+##Navigate to the project directory:
+   ```bash
+   cd your-react-extension
+   ```
 
-### `npm test`
+##Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+#How to Build
+To build the extension for production:
 
-### `npm run build`
+##Run the build command:
+   ```bash
+   npm run build
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+##Navigate to the project directory:
+   ```bash
+   cd your-react-extension
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#Google Chrome
+  1- Open Google Chrome and go to chrome://extensions/.
+  2- Enable "Developer mode" in the top right corner.
+  3- Click on "Load unpacked" and select the build directory of your extension.
+  4- The extension should now be added to your browser.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#Mozilla Firefox
+  1- Open Firefox and go to about:debugging#/runtime/this-firefox.
+  2- Click on "Load Temporary Add-on" and select any file in the build directory.
+  3- The extension should now be loaded in your Firefox browser.
 
-### `npm run eject`
+#Usage
+##Insert Your OpenAI Key:
+To enable OpenAI functionality, you must insert your OpenAI key into the extension. Follow these steps:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+  -Click on the extension icon in your browser.
+  -Find the OpenAI settings section.
+  -Enter your OpenAI key and save the settings.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+##Verification:
+If the provided OpenAI key is correct, you will see a confirmation message within the extension UI indicating that OpenAI functionality is now enabled.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+##Open your meeting on Google Meet
+   #-Activate the subtitles!
+   
+#Contributing
+If you'd like to contribute to this project, please follow the Contribution Guidelines.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+License
+This project is licensed under the MIT License.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Make sure to replace placeholder information like `your-username`, `your-react-extension`, and any additional placeholders with your actual project details.
