@@ -30,11 +30,11 @@ To build the extension for production:
    npm run build
    ```
 
-
 ##Navigate to the project directory:
    ```bash
    cd your-react-extension
    ```
+
 #Google Chrome
   1- Open Google Chrome and go to chrome://extensions/.
   2- Enable "Developer mode" in the top right corner.
