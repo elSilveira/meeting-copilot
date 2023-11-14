@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "version": "1.0",
   "name": "Meeting Context",
-  "description": "Receive the context of your meeting in",
+  "description": "Receive the context of your meeting and connect to AI",
   "permissions": [
     "storage",
     "activeTab",
@@ -10,7 +10,7 @@
   ],
   "action": {
     "default_icon": {
-      "16": "logo192.png",
+      "16": "logo.png",
       "48": "logo192.png",
       "128": "logo512.png"
     },
@@ -24,7 +24,7 @@
     }
   ],
   "icons": {
-    "16": "logo192.png",
+    "16": "logo.png",
     "48": "logo192.png",
     "128": "logo512.png"
   },
