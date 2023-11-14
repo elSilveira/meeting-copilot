@@ -53,10 +53,13 @@ To enable OpenAI functionality, you must insert your OpenAI key into the extensi
   -Click on the extension icon in your browser.
   -Find the OpenAI settings section.
   -Enter your OpenAI key and save the settings.
-  
+
 ##Verification:
 If the provided OpenAI key is correct, you will see a confirmation message within the extension UI indicating that OpenAI functionality is now enabled.
 
+##Open your meeting on Google Meet
+   #-Activate the subtitles!
+   
 #Contributing
 If you'd like to contribute to this project, please follow the Contribution Guidelines.
 
