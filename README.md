@@ -37,13 +37,18 @@ To build the extension for production:
 
 ## Google Chrome
   1- Open Google Chrome and go to chrome://extensions/.
+  
   2- Enable "Developer mode" in the top right corner.
+  
   3- Click on "Load unpacked" and select the build directory of your extension.
+  
   4- The extension should now be added to your browser.
 
 ## Mozilla Firefox
   1- Open Firefox and go to about:debugging#/runtime/this-firefox.
+  
   2- Click on "Load Temporary Add-on" and select any file in the build directory.
+  
   3- The extension should now be loaded in your Firefox browser.
 
 ## Usage
@@ -51,7 +56,9 @@ To build the extension for production:
 To enable OpenAI functionality, you must insert your OpenAI key into the extension. Follow these steps:
 
   -Click on the extension icon in your browser.
+  
   -Find the OpenAI settings section.
+  
   -Enter your OpenAI key and save the settings.
 
 ### Verification:
