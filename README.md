@@ -22,45 +22,45 @@ This is a React extension designed to [provide a brief description of what your 
    npm install
    ```
 
-# How to Build
+### How to Build
 To build the extension for production:
 
-## Run the build command:
+### Run the build command:
    ```bash
    npm run build
    ```
 
-## Navigate to the project directory:
+### Navigate to the project directory:
    ```bash
    cd your-react-extension
    ```
 
-# Google Chrome
+## Google Chrome
   1- Open Google Chrome and go to chrome://extensions/.
   2- Enable "Developer mode" in the top right corner.
   3- Click on "Load unpacked" and select the build directory of your extension.
   4- The extension should now be added to your browser.
 
-# Mozilla Firefox
+## Mozilla Firefox
   1- Open Firefox and go to about:debugging#/runtime/this-firefox.
   2- Click on "Load Temporary Add-on" and select any file in the build directory.
   3- The extension should now be loaded in your Firefox browser.
 
-# Usage
-## Insert Your OpenAI Key:
+## Usage
+### Insert Your OpenAI Key:
 To enable OpenAI functionality, you must insert your OpenAI key into the extension. Follow these steps:
 
   -Click on the extension icon in your browser.
   -Find the OpenAI settings section.
   -Enter your OpenAI key and save the settings.
 
-## Verification:
+### Verification:
 If the provided OpenAI key is correct, you will see a confirmation message within the extension UI indicating that OpenAI functionality is now enabled.
 
-## Open your meeting on Google Meet
-   # -Activate the subtitles!
+### Open your meeting on Google Meet
+   ### -Activate the subtitles!
    
-# Contributing
+## Contributing
 If you'd like to contribute to this project, please follow the Contribution Guidelines.
 
 License
