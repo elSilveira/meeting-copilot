@@ -1,0 +1,46 @@
+.my-main-view {
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+  position: absolute;
+}
+
+.my-view {
+  width: 380px;
+  height: 250px;
+  padding: 20px;
+  overflow-y: auto;
+  scroll-behavior: auto;
+  background: white;
+  border-radius: 15px;
+  resize: vertical;
+}
+
+.my-bot-view {
+  width: 380px;
+  height: 250px;
+  top: 0;
+  right: 0;
+  z-index: 999;
+  position: absolute;
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  scroll-behavior: auto;
+  border-radius: 15px;
+  resize: vertical;
+}
+
+.my-btn {
+  width: 200px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  background: white;
+  cursor: pointer;
+  border-radius: 15px;
+  margin-bottom: 8px;
+  resize: true;
+}
