@@ -1,7 +1,7 @@
 .my-main-view {
   bottom: 0;
   right: 0;
-  z-index: 999;
+  z-index: 9999999;
   position: absolute;
 }
 
@@ -21,7 +21,7 @@
   height: 250px;
   top: 0;
   right: 0;
-  z-index: 999;
+  z-index: 9999999;
   position: absolute;
   background: white;
   padding: 20px;

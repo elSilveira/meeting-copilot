@@ -1,8 +1,10 @@
+
+
 /*global chrome*/
 var OPENAI_API_KEY = "";
 
 let _url = window.location.href;
-if (_url.includes('meet.google')) {
+if (_url.includes('meet.google') || _url.includes('teams.live')) {
   run();
 }
 chrome.runtime.onMessage.addListener((event) => {
@@ -74,21 +76,27 @@ function run() {
   }
 
   function readText() {
-
+    let iframe = document.getElementsByTagName('iframe')[0]
     let tellerElements = document.querySelectorAll('.zs7s8d');
     let subtitleElements = document.querySelectorAll('.iTTPOb');
+
+    if (iframe && tellerElements.length == 0 && tellerElements.length == 0) {
+      let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+      tellerElements = iframeDocument.querySelectorAll('.ui-chat__message__author');
+      subtitleElements = iframeDocument.querySelectorAll('[data-tid="closed-caption-text"]');
+    }
 
     // Check if at least one teller element is found
     if (tellerElements.length > 0) {
       // Use the first teller element as the single teller
-      teller = extractTextFromSpans(tellerElements);
+      teller = extractTextFromSpans(tellerElements[0]);
 
       // Check if at least one subtitle element is found
       if (subtitleElements.length > 0) {
         let nt = extractTextFromSpans(subtitleElements);
         text.push(teller, nt);
         addToHistory(teller, nt)
-        getView().innerHTML = history.get('You')
+        getView().innerHTML = Array.from(history).map(([key, value]) => key + '\n' + value.join(''));
         getView().scrollTop = getView().scrollHeight;
       }
     }

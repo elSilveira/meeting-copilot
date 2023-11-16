@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "activeTab",
-    "tabs"
+    "*api.openai.*",
+    "activeTab"
   ],
   "action": {
     "default_icon": {
