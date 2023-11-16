@@ -76,14 +76,20 @@ function run() {
   }
 
   function readText() {
-    let iframe = document.getElementsByTagName('iframe')[0]
+    //Google Meeting
     let tellerElements = document.querySelectorAll('.zs7s8d');
     let subtitleElements = document.querySelectorAll('.iTTPOb');
 
-    if (iframe && tellerElements.length == 0 && tellerElements.length == 0) {
-      let iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-      tellerElements = iframeDocument.querySelectorAll('.ui-chat__message__author');
-      subtitleElements = iframeDocument.querySelectorAll('[data-tid="closed-caption-text"]');
+    if (_url.includes('teams.live')) {
+      let iframe = document.getElementsByTagName('iframe')[0]
+      if (iframe && tellerElements.length == 0 && tellerElements.length == 0) {
+        //Teams
+        const iframeDocument = iframe?.contentDocument || iframe?.contentWindow.document;
+        if (iframeDocument) {
+          tellerElements = iframeDocument.querySelectorAll('.ui-chat__message__author');
+          subtitleElements = iframeDocument.querySelectorAll('[data-tid="closed-caption-text"]');
+        }
+      }
     }
 
     // Check if at least one teller element is found
@@ -165,9 +171,22 @@ function run() {
         messages: [
           {
             "role": "user",
-            "content": 'The content can be duplicated, be sure you understand the context. Create topics to the following content, consider you are being interviewed for an position, your responses will make you pass or not, use small words, be concrete, precise and senior. Return formatted in html way to be injected on innerHTML.'
-              + ' || Content:' + message
-          }]
+            "content": `<p>I need your help respond to the interviewer for a job interview. Assume I'm being interviewed for a role right now. Please provide tips on the following topics:</p>
+            <ol>
+            <li>Effective Communication:</li>
+            <li>Problem-Solving:</li>
+            <li>Leadership:</li>
+            <li>Adaptability:</li>
+            <li>Company Knowledge:</li>
+            </ol>
+            <p>Remember to use simple language, be specific, concise, and convey a sense of seniority. Format your responses in HTML for easy integration into innerHTML.</p> `
+          },
+          {
+            "role": "user",
+            "content": `Here is a text from the meeting:
+            <p>${message}</p>`
+          }
+        ]
       })
     }).then((response) => response.json())
       .then((data) => {
