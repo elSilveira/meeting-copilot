@@ -5,7 +5,35 @@
   position: absolute;
 }
 
+.collapse-button {
+  position: absolute;
+  top: 10px;
+  cursor: pointer;
+  font-size: 20px;
+  right: 10px;
+  text-shadow: -2px -0.5px 3px #13111180;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  width: 18px;
+}
+
+.collapse-button-ic {
+  transform: scaleY(2);
+  padding: 5px;
+}
+
+.collapsed .collapse-button {
+  width: 25px;
+  transform: rotate(180deg);
+  background: #ecececba;
+  border-radius: 0px 40% 54% 0;
+  padding: 5px;
+}
+
+
 .my-view {
+  margin: 15px;
   width: 380px;
   height: 250px;
   padding: 20px;
@@ -14,9 +42,11 @@
   background: white;
   border-radius: 15px;
   resize: vertical;
+  box-shadow: -8px 3px 10px #00000075;
 }
 
 .my-bot-view {
+  margin: 15px;
   width: 380px;
   height: 250px;
   top: 0;
@@ -29,6 +59,7 @@
   scroll-behavior: auto;
   border-radius: 15px;
   resize: vertical;
+  box-shadow: -8px 3px 10px #00000075;
 }
 
 .my-btn {
@@ -43,4 +74,9 @@
   border-radius: 15px;
   margin-bottom: 8px;
   resize: true;
+  box-shadow: 0px 2px 10px #00000075;
+}
+
+.collapsed {
+  width: 1px !important;
 }

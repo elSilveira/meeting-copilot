@@ -74,7 +74,9 @@ function run() {
     }
     history.get(teller).push(...newValue);
   }
+  function printText() {
 
+  }
   function readText() {
     //Google Meeting
     let tellerElements = document.querySelectorAll('.zs7s8d');
@@ -117,6 +119,8 @@ function run() {
       myView.id = 'myView'
       myView.classList.add('my-view')
       myMainView.classList.add('my-main-view')
+
+      myMainView.append(collapseView(myMainView))
       myMainView.append(myView)
       myMainView.append(createRequester())
       myMainView.append(createClear())
@@ -124,11 +128,37 @@ function run() {
     }
     return myView
   }
+  function collapseView(view) {
+    let collapseView = document.createElement('div');
+    collapseView.classList.add('collapse-button');
+    let collapseViewIc = document.createElement('div');
+    collapseViewIc.classList.add('collapse-button-ic');
+    collapseViewIc.innerHTML = '>'
+    collapseView.onclick = (ev) => {
+      let toCollapse = document.querySelector('.my-bot-view')
+      if (toCollapse) {
+        if (toCollapse.className.includes('collapsed')) {
+          toCollapse.classList.remove('collapsed')
+        }
+        else {
+          toCollapse.classList.add('collapsed')
+        }
+      }
+      if (view.className.includes('collapsed')) {
+        view.classList.remove('collapsed')
+      }
+      else {
+        view.classList.add('collapsed')
+      }
+    }
+    collapseView.append(collapseViewIc)
+    return collapseView
+  }
   function createRequester() {
     let myBtn = document.createElement('div');
     myBtn.id = 'myBtn'
     myBtn.innerHTML = 'Send to AI'
-    myBtn.onclick = () => sendMessage(history.get('You'))
+    myBtn.onclick = () => sendMessage(Array.from(history).map(([key, value]) => key + '\n' + value.join('')))
     myBtn.classList.add('my-btn')
     return myBtn
   }
@@ -170,20 +200,22 @@ function run() {
         model: 'gpt-3.5-turbo',
         messages: [
           {
-            "role": "user",
-            "content": `<p>I need your help respond to the interviewer for a job interview. Assume I'm being interviewed for a role right now. Please provide tips on the following topics:</p>
-            <ol>
-            <li>Effective Communication:</li>
-            <li>Problem-Solving:</li>
-            <li>Leadership:</li>
-            <li>Adaptability:</li>
-            <li>Company Knowledge:</li>
-            </ol>
-            <p>Remember to use simple language, be specific, concise, and convey a sense of seniority. Format your responses in HTML for easy integration into innerHTML.</p> `
+            "role": "system",
+            "content": `YOU ALWAYS RETURN YOUR RESPONSE FORMATED AS HTML, NEVER JUST TEXT. Your answers are small words full of wisdom. 
+            You dont give tips, You give concise answers as you were the person attending the interview. 
+            You are providing immediate, senior-level tips to help the user stand out in their ongoing job interview. 
+            Offer concrete advice with examples, anecdotes, or data points. REMEMBER TO ALWAYS RETURN YOUR RESPONSE FORMATED AS HTML, NEVER JUST TEXT, 
+            your response will be injected through innerHTML property.`
           },
           {
             "role": "user",
-            "content": `Here is a text from the meeting:
+            "content": ` In the midst of my interview and seeking expert guidance! Need specific, 
+            senior-level tips to shine as a top candidate. Share examples, anecdotes, or data points.
+            format in a way that is easy to read.`
+          },
+          {
+            "role": "user",
+            "content": `Meeting content:
             <p>${message}</p>`
           }
         ]
