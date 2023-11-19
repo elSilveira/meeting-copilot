@@ -44,49 +44,87 @@ function run() {
 
     return deduplicatedHistory;
   }
-  var stringSize = 16000;
+  var stringSize = 450;
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
     let actual = history.get(teller) ?? '';
     let newValue = new Set()
+    let selected = false
 
     if (actual) {
-      let lastHistory = actual[actual.length - 1].value.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('');
-      let testText = nt;
-      let testHText = testText.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('');
-      if (testText.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('').indexOf(lastHistory) > -1) {
-        history.get(teller).pop();
-      }
+      let treating = actual[actual.length - 1];
+      history.get(teller).pop()
+      nt = `${treating.value} ${nt.replace(treating.value, '')}`;
     }
 
     let nextIndex;
     while (nt.length > stringSize) {
-      nextIndex = stringSize + nt.substring(stringSize).indexOf(' ');
-      newValue.add({ printed: false, value: nt.substring(0, nextIndex) });
+      nextIndex = nt.substring(stringSize).indexOf('.') + 1;
+      if (nextIndex > 0) {
+        nextIndex += stringSize
+        newValue.add({ selected: selected, printed: false, value: nt.substring(0, nextIndex) });
+      } else {
+        newValue.add({ selected: selected, printed: false, value: nt.substring(0) });
+      }
       nt = nt.substring(nextIndex);
     }
-    newValue.add({ printed: false, value: nt });
+    if (nt.length > 0)
+      newValue.add({ selected: selected, printed: false, value: nt });
 
     if (!history.get(teller)) {
       history.set(teller, Array.from(newValue));
-      return;
     } else {
       history.get(teller).push(...Array.from(newValue));
     }
   }
+
+  function selectItem(key, index) {
+    const historyEntry = history.get(key);
+
+    if (historyEntry && historyEntry[index]) {
+      historyEntry[index].selected = !historyEntry[index].selected;
+    } else {
+      console.error("Invalid key or index provided.");
+    }
+  }
+
+  var inputBox = (item, key, index) => {
+    let inp = document.createElement('input')
+    let par = document.createElement('p')
+    let lab = document.createElement('label')
+    lab.classList.add('label-history')
+    par.classList.add('p-history')
+
+
+    inp.classList.add('my-checkbox')
+    inp.type = 'checkbox'
+    if (item.selected) inp.checked = true;
+
+    lab.innerHTML = item.value + '<br>';
+
+    par.append(inp)
+    par.append(lab)
+
+    return par
+  }
   function printText() {
     let view = getView();
     let ret = ''
+    view.innerHTML = ''
     Array.from(history).forEach(
       ([key, value]) => {
-        value.forEach(item => {
-          if (item.printed) return;
-          ret += `<span>${key}</span>:<br>${item.value}<br><br>`;
-          item.printed = true;
+        let res = document.createElement('div')
+        res.classList.add('container-history')
+        res.onclick = () => { selectItem(key, index) }
+        let nam = document.createElement('span')
+        nam.innerHTML = key;
+        res.append(nam)
+        value.forEach((item, index) => {
+          res.append(inputBox(item, key, index));
         })
+        view.append(res)
       }
     );
-    view.innerHTML = ret;
     view.scrollTop = getView().scrollHeight;
   }
   function readText() {
@@ -96,7 +134,9 @@ function run() {
         firstActivation = false
       } else {
         if (document.querySelector('.juFBl').querySelector('[aria-pressed=false]')) {
-          subtitle
+          updateAlert('Activate Subtitle to start.')
+        } else {
+          updateAlert('')
         }
       }
     } catch (err) { console.log('not in screen yet') }
@@ -130,11 +170,20 @@ function run() {
         printText()
       }
     }
-    setTimeout(readText, 2000);
+    setTimeout(readText, 3000);
+  }
+  function updateAlert(text, time) {
+    let alert = document.getElementsByClassName('alert-msg')[0];
+    alert.innerHTML = text;
+    if (time) {
+      setTimeout(() => {
+        alert.innerHTML = ' ';
+      }, time * 1000);
+    }
   }
   function createAlert(text) {
     var alert = document.createElement('div');
-    alert.innerHTML = text;
+    alert.innerHTML = text ?? ' ';
     alert.classList.add('alert-msg')
     return alert
   }
@@ -153,6 +202,7 @@ function run() {
 
       myMainView.append(collapseView(myMainView))
       myMainView.append(myView)
+      myMainView.append(createAlert())
       myButtonsView.append(createRequester())
       myButtonsView.append(createClear())
       myMainView.append(myButtonsView)
@@ -230,7 +280,11 @@ function run() {
   getView().innerHTML = ''
 
   function sendMessage(prompt) {
-    let message = Array.from(history).map(([key, value]) => value.map(val => val.value)).join('');
+    let message = Array.from(history).map(([key, value]) => value.filter((e) => e.selected).map(val => val.value)).join('');
+    if (!message || message.length == '') {
+      updateAlert('Select a message!', 15)
+      return
+    }
 
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

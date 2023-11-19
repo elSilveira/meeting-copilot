@@ -1,13 +1,10 @@
 {
   "manifest_version": 3,
-  "version": "1.2",
-  "name": "Meeting Context",
-  "description": "Receive the context of your meeting and connect to AI",
+  "version": "1.0",
+  "name": "Career Copilot",
+  "description": "AI-powered career copilot: Optimize, track, and receive tailored insights for a guided success story.",
   "permissions": [
-    "storage",
-    "activeTab",
-    "*api.openai.*",
-    "activeTab"
+    "storage"
   ],
   "action": {
     "default_icon": {

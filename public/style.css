@@ -45,6 +45,7 @@
   border-radius: 15px;
   resize: vertical;
   box-shadow: -8px 3px 10px #00000075;
+  margin-bottom: -25px;
 }
 
 .my-bot-view {
@@ -105,4 +106,31 @@
 .collapsed {
   width: 1px !important;
   padding: 0 !important;
+}
+
+.alert-msg {
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  color: #e80000;
+  justify-content: center;
+  height: 15px;
+}
+
+.label-history {
+  font-size: 12px;
+}
+
+.p-history {
+  cursor: pointer;
+  display: flex;
+  align-items: start;
+  justify-content: start;
+}
+
+.container-history {
+  cursor: pointer;
+}
+.my-checkbox{
+  margin-top: 3px;
 }
