@@ -61,12 +61,11 @@ function run() {
     while (nt.length > stringSize) {
       nextIndex = nt.substring(stringSize).indexOf('.') + 1;
       if (nextIndex > 0) {
-        nextIndex += stringSize
-        newValue.add({ selected: selected, printed: false, value: nt.substring(0, nextIndex) });
+        newValue.add({ selected: selected, printed: false, value: nt.substring(0, nextIndex + stringSize ) });
       } else {
         newValue.add({ selected: selected, printed: false, value: nt.substring(0) });
       }
-      nt = nt.substring(nextIndex);
+      nt = nt.substring(nextIndex + stringSize);
     }
     if (nt.length > 0)
       newValue.add({ selected: selected, printed: false, value: nt });
@@ -115,12 +114,12 @@ function run() {
       ([key, value]) => {
         let res = document.createElement('div')
         res.classList.add('container-history')
-        res.onclick = () => { selectItem(key, index) }
         let nam = document.createElement('span')
         nam.innerHTML = key;
         res.append(nam)
         value.forEach((item, index) => {
           res.append(inputBox(item, key, index));
+          res.onclick = () => { selectItem(key, index) }
         })
         view.append(res)
       }
