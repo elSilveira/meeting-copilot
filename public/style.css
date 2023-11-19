@@ -1,5 +1,5 @@
 .my-main-view {
-  bottom: 0;
+  bottom: 5px;
   right: 0;
   z-index: 9999999;
   position: absolute;
@@ -7,10 +7,10 @@
 
 .collapse-button {
   position: absolute;
-  top: 10px;
+  top: 25px;
   cursor: pointer;
   font-size: 20px;
-  right: 10px;
+  right: 25px;
   text-shadow: -2px -0.5px 3px #13111180;
   font-size: 20px;
   display: flex;
@@ -24,11 +24,13 @@
 }
 
 .collapsed .collapse-button {
-  width: 25px;
+  width: 30px;
   transform: rotate(180deg);
   background: #ecececba;
   border-radius: 0px 40% 54% 0;
   padding: 5px;
+  right: 0px;
+  top: 10px;
 }
 
 
@@ -62,8 +64,20 @@
   box-shadow: -8px 3px 10px #00000075;
 }
 
+.my-btns {
+  display: flex;
+  width: 350px;
+  overflow: scroll;
+  gap: 20px;
+  padding: 0 10px 5px 10px;
+  text-wrap: nowrap;
+}
+
 .my-btn {
-  width: 200px;
+  font-size: 14px;
+  width: auto;
+  width: fit-content;
+  padding: 0 10px;
   height: 40px;
   display: flex;
   justify-content: center;
@@ -77,6 +91,18 @@
   box-shadow: 0px 2px 10px #00000075;
 }
 
+#myClrBtn {
+  margin: 0 10px 0 10px;
+  width: auto;
+}
+
+.my-btn-view {
+  display: flex;
+  align-items: inherit;
+  justify-content: initial;
+}
+
 .collapsed {
   width: 1px !important;
+  padding: 0 !important;
 }

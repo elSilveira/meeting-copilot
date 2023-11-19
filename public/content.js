@@ -1,5 +1,3 @@
-
-
 /*global chrome*/
 var OPENAI_API_KEY = "";
 
@@ -19,8 +17,7 @@ chrome.runtime.onMessage.addListener((event) => {
     }
   }
 })
-
-let teller;
+let firstActivation = true;
 let history = new Map();
 let text = [];
 function run() {
@@ -47,15 +44,17 @@ function run() {
 
     return deduplicatedHistory;
   }
-  var stringSize = 10000;
+  var stringSize = 16000;
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
-    let actual = history.get(teller);
-    let newValue = []
+    let actual = history.get(teller) ?? '';
+    let newValue = new Set()
 
     if (actual) {
-      let lastHistory = actual[actual.length - 1];
-      if (nt.indexOf(lastHistory) > -1) {
+      let lastHistory = actual[actual.length - 1].value.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('');
+      let testText = nt;
+      let testHText = testText.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('');
+      if (testText.toLowerCase().replace(',', '.').split(' ').filter((e, i) => i < 4).join('').indexOf(lastHistory) > -1) {
         history.get(teller).pop();
       }
     }
@@ -63,21 +62,45 @@ function run() {
     let nextIndex;
     while (nt.length > stringSize) {
       nextIndex = stringSize + nt.substring(stringSize).indexOf(' ');
-      newValue.push(nt.substring(0, nextIndex));
+      newValue.add({ printed: false, value: nt.substring(0, nextIndex) });
       nt = nt.substring(nextIndex);
     }
-    newValue.push(nt);
+    newValue.add({ printed: false, value: nt });
 
-    if (!actual) {
-      history.set(teller, newValue);
+    if (!history.get(teller)) {
+      history.set(teller, Array.from(newValue));
       return;
+    } else {
+      history.get(teller).push(...Array.from(newValue));
     }
-    history.get(teller).push(...newValue);
   }
   function printText() {
-
+    let view = getView();
+    let ret = ''
+    Array.from(history).forEach(
+      ([key, value]) => {
+        value.forEach(item => {
+          if (item.printed) return;
+          ret += `<span>${key}</span>:<br>${item.value}<br><br>`;
+          item.printed = true;
+        })
+      }
+    );
+    view.innerHTML = ret;
+    view.scrollTop = getView().scrollHeight;
   }
   function readText() {
+    try {
+      if (firstActivation) {
+        document.querySelector('.juFBl').querySelector('[aria-pressed=false]').click();
+        firstActivation = false
+      } else {
+        if (document.querySelector('.juFBl').querySelector('[aria-pressed=false]')) {
+          subtitle
+        }
+      }
+    } catch (err) { console.log('not in screen yet') }
+
     //Google Meeting
     let tellerElements = document.querySelectorAll('.zs7s8d');
     let subtitleElements = document.querySelectorAll('.iTTPOb');
@@ -97,33 +120,42 @@ function run() {
     // Check if at least one teller element is found
     if (tellerElements.length > 0) {
       // Use the first teller element as the single teller
-      teller = extractTextFromSpans(tellerElements[0]);
+      teller = tellerElements[0].innerText;
 
       // Check if at least one subtitle element is found
       if (subtitleElements.length > 0) {
-        let nt = extractTextFromSpans(subtitleElements);
-        text.push(teller, nt);
-        addToHistory(teller, nt)
-        getView().innerHTML = Array.from(history).map(([key, value]) => key + '\n' + value.join(''));
-        getView().scrollTop = getView().scrollHeight;
+        let extactedText = extractTextFromSpans(subtitleElements);
+        // text.push(teller, extactedText);
+        addToHistory(teller, extactedText)
+        printText()
       }
     }
     setTimeout(readText, 2000);
   }
-
+  function createAlert(text) {
+    var alert = document.createElement('div');
+    alert.innerHTML = text;
+    alert.classList.add('alert-msg')
+    return alert
+  }
   function getView() {
     let myView = document.getElementById('myView');
     if (!myView) {
+      let myButtonsView = document.createElement('div');
       let myMainView = document.createElement('div');
       myView = document.createElement('div');
       myView.id = 'myView'
+      myView.contentEditable = true;
+      myView.onkeydown = (ev) => { ev.stopPropagation; ev.preventDefault(); }
       myView.classList.add('my-view')
+      myButtonsView.classList.add('my-btn-view')
       myMainView.classList.add('my-main-view')
 
       myMainView.append(collapseView(myMainView))
       myMainView.append(myView)
-      myMainView.append(createRequester())
-      myMainView.append(createClear())
+      myButtonsView.append(createRequester())
+      myButtonsView.append(createClear())
+      myMainView.append(myButtonsView)
       document.body.appendChild(myMainView)
     }
     return myView
@@ -155,14 +187,23 @@ function run() {
     return collapseView
   }
   function createRequester() {
-    let myBtn = document.createElement('div');
-    myBtn.id = 'myBtn'
-    myBtn.innerHTML = 'Send to AI'
-    myBtn.onclick = () => sendMessage(Array.from(history).map(([key, value]) => key + '\n' + value.join('')))
-    myBtn.classList.add('my-btn')
-    return myBtn
+    let myBtns = document.createElement('div');
+    myBtns.classList.add('my-btns');
+    [
+      { text: 'Get Insights', id: 'insightsBtn', prompt: 'Tell me more about. Show it like a website, easy and short and simple and clear.' },
+      { text: 'Explore More', id: 'explainBtn', prompt: 'Whats cool about? Show it like a website, easy and short and simple and clear.' },
+      { text: 'Simply Explain', id: 'simpleBtn', prompt: "Explain easily. Show it like a website, easy and short and simple and clear." },
+      { text: 'Tips & Tricks', id: 'tipsBtn', prompt: "Gimme some tips and tricks about. Show it like a website, easy and short and simple and clear." },
+    ].map(btn => {
+      let myBtn = document.createElement('div');
+      myBtn.id = btn.id
+      myBtn.innerHTML = btn.text
+      myBtn.onclick = () => sendMessage(btn.prompt)
+      myBtn.classList.add('my-btn');
+      myBtns.append(myBtn)
+    })
+    return myBtns
   }
-
   function createClear() {
     let myBtn = document.createElement('div');
     myBtn.id = 'myClrBtn'
@@ -176,7 +217,6 @@ function run() {
     myBtn.classList.add('my-btn')
     return myBtn
   }
-
   function getBotView() {
     let myBotView = document.getElementById('myBotView');
     if (!myBotView) {
@@ -189,7 +229,9 @@ function run() {
   }
   getView().innerHTML = ''
 
-  function sendMessage(message) {
+  function sendMessage(prompt) {
+    let message = Array.from(history).map(([key, value]) => value.map(val => val.value)).join('');
+
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -201,22 +243,12 @@ function run() {
         messages: [
           {
             "role": "system",
-            "content": `YOU ALWAYS RETURN YOUR RESPONSE FORMATED AS HTML, NEVER JUST TEXT. Your answers are small words full of wisdom. 
-            You dont give tips, You give concise answers as you were the person attending the interview. 
-            You are providing immediate, senior-level tips to help the user stand out in their ongoing job interview. 
-            Offer concrete advice with examples, anecdotes, or data points. REMEMBER TO ALWAYS RETURN YOUR RESPONSE FORMATED AS HTML, NEVER JUST TEXT, 
-            your response will be injected through innerHTML property.`
+            "content": `Return as Website in HTML following: ${prompt}`
           },
           {
             "role": "user",
-            "content": ` In the midst of my interview and seeking expert guidance! Need specific, 
-            senior-level tips to shine as a top candidate. Share examples, anecdotes, or data points.
-            format in a way that is easy to read.`
-          },
-          {
-            "role": "user",
-            "content": `Meeting content:
-            <p>${message}</p>`
+            "content":
+              `About: ${message}`
           }
         ]
       })
