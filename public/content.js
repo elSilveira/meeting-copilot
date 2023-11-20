@@ -28,53 +28,95 @@ function run() {
   function extractTextFromSpans(elements) {
     return Array.from(elements).map(element => element.innerText).join(' ');
   }
+  function mergeStringsRemoveDuplicates(str1, str2) {
+    // Combine the two strings
+    let combinedStr = str1 + " " + str2;
 
-  function extractTellersFromSpans(elements) {
-    Array.from(elements).forEach(element => tellers.add(element.innerText));
-  }
-  // Function to clean up the history array
-  function cleanUpHistory(history) {
-    // Remove empty entries
-    let filteredHistory = history.filter(entry => entry.trim() !== '');
+    // Split the combined string into an array of words
+    let words = combinedStr.split(/\s+/);
 
-    // Remove consecutive duplicate entries
-    let deduplicatedHistory = filteredHistory.filter((entry, index, array) => {
-      return index === 0 || entry !== array[index - 1];
+    // Create an object to store unique words
+    let uniqueWords = {};
+
+    // Filter out duplicates while preserving order
+    let uniqueWordsArray = words.filter(word => {
+      if (!uniqueWords[word]) {
+        uniqueWords[word] = true;
+        return true;
+      }
+      return false;
     });
 
-    return deduplicatedHistory;
+    // Join the unique words into a string
+    let resultStr = uniqueWordsArray.join(' ');
+
+    return resultStr;
   }
-  var stringSize = 450;
+  function removeDuplicateWords(inputStr) {
+    // Split the input string into an array of words
+    let words = inputStr.split(/\s+/);
+
+    // Create an object to store unique words
+    let uniqueWords = {};
+
+    // Filter out duplicates while preserving order
+    let uniqueWordsArray = words.filter(word => {
+      if (!uniqueWords[word]) {
+        uniqueWords[word] = true;
+        return true;
+      }
+      return false;
+    });
+
+    // Join the unique words into a string
+    let resultStr = uniqueWordsArray.join(' ');
+
+    return resultStr;
+  }
+
+
+  var stringSize = 550;
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
     let actual = history.get(teller) ?? '';
-    let newValue = new Set()
     let selected = false
 
-    if (actual) {
+    if (actual && actual.length > 0) {
       let treating = actual[actual.length - 1];
+      selected = treating.selected
       history.get(teller).pop()
-      nt = `${treating.value} ${nt.replace(treating.value, '')}`;
+      nt = mergeStringsRemoveDuplicates(treating.value, nt)
+    }
+    nt = removeDuplicateWords(nt)
+
+    setHistory = (hist) => {
+      if (history.get(teller)) {
+        history.get(teller).push({ selected: selected, printed: false, value: hist });
+        selected = false;
+      }
+      else
+        history.set(teller, [{ selected: false, printed: false, value: hist }]);
     }
 
     let nextIndex;
     while (nt.length > stringSize) {
       nextIndex = nt.substring(stringSize).indexOf('.') + 1;
-      if (nextIndex > 0) {
-        newValue.add({ selected: selected, printed: false, value: nt.substring(0, nextIndex + stringSize ) });
+      if (nextIndex == 0) nt.substring(stringSize).indexOf('?') + 1;
+      if (nextIndex == 0) nt.substring(stringSize).indexOf(' ') + 1;
+      if (nextIndex == 0) {
+        setHistory(nt);
+        nt = ''
       } else {
-        newValue.add({ selected: selected, printed: false, value: nt.substring(0) });
+        nextIndex += stringSize
+        setHistory(nt.substring(0, nextIndex));
+        nt = nt.substring(nextIndex);
       }
-      nt = nt.substring(nextIndex + stringSize);
-    }
-    if (nt.length > 0)
-      newValue.add({ selected: selected, printed: false, value: nt });
 
-    if (!history.get(teller)) {
-      history.set(teller, Array.from(newValue));
-    } else {
-      history.get(teller).push(...Array.from(newValue));
     }
+
+    if (nt.length > 0)
+      setHistory(nt);
+
   }
 
   function selectItem(key, index) {
@@ -98,6 +140,8 @@ function run() {
     inp.classList.add('my-checkbox')
     inp.type = 'checkbox'
     if (item.selected) inp.checked = true;
+    par.onclick = () => { selectItem(key, index); printText() }
+
 
     lab.innerHTML = item.value + '<br>';
 
@@ -108,7 +152,6 @@ function run() {
   }
   function printText() {
     let view = getView();
-    let ret = ''
     view.innerHTML = ''
     Array.from(history).forEach(
       ([key, value]) => {
@@ -119,7 +162,6 @@ function run() {
         res.append(nam)
         value.forEach((item, index) => {
           res.append(inputBox(item, key, index));
-          res.onclick = () => { selectItem(key, index) }
         })
         view.append(res)
       }
@@ -133,9 +175,7 @@ function run() {
         firstActivation = false
       } else {
         if (document.querySelector('.juFBl').querySelector('[aria-pressed=false]')) {
-          updateAlert('Activate Subtitle to start.')
-        } else {
-          updateAlert('')
+          updateAlert('Activate Subtitle to start.', 15, alertType.warning)
         }
       }
     } catch (err) { console.log('not in screen yet') }
@@ -171,9 +211,15 @@ function run() {
     }
     setTimeout(readText, 3000);
   }
-  function updateAlert(text, time) {
+  alertType = {
+    success: 'green',
+    warning: 'yellow',
+    error: 'red'
+  }
+  function updateAlert(text, time, type) {
     let alert = document.getElementsByClassName('alert-msg')[0];
     alert.innerHTML = text;
+    alert.style.color = Array.from(alertType).map(([key, value]) => { if (key == type) return value }).join() ?? 'red'
     if (time) {
       setTimeout(() => {
         alert.innerHTML = ' ';
@@ -281,10 +327,11 @@ function run() {
   function sendMessage(prompt) {
     let message = Array.from(history).map(([key, value]) => value.filter((e) => e.selected).map(val => val.value)).join('');
     if (!message || message.length == '') {
-      updateAlert('Select a message!', 15)
+      updateAlert('Select a message!', 15, alertType.warning)
       return
     }
 
+    updateAlert('Requesting...!', null, alertType.success)
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -307,10 +354,27 @@ function run() {
       })
     }).then((response) => response.json())
       .then((data) => {
+        if (data.error) {
+          switch (data.error.code) {
+            case ("invalid_api_key"):
+              updateAlert('Invalid OpenAI Key!', 15, alertType.error)
+              return
+            case ("insufficient_quota"):
+              updateAlert('You exceeded your current quota!', 15, alertType.error)
+              return
+            default:
+              updateAlert('Error requesting!', 15, alertType.error)
+              return
+          }
+        }
         const chatbotMessage = data.choices[0].message.content;
         getBotView().innerHTML = chatbotMessage;
+        updateAlert('')
       })
-      .catch(error => console.error(error));
+      .catch(error => {
+        console.error(error);
+        updateAlert('Error requesting!', 15, alertType.error)
+      });
 
   }
 

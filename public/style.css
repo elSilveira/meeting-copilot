@@ -41,7 +41,7 @@
   padding: 20px;
   overflow-y: auto;
   scroll-behavior: auto;
-  background: white;
+  background: #f3f3f3b8;
   border-radius: 15px;
   resize: vertical;
   box-shadow: -8px 3px 10px #00000075;
@@ -56,7 +56,7 @@
   right: 0;
   z-index: 9999999;
   position: absolute;
-  background: white;
+  background: #f3f3f3b8;
   padding: 20px;
   overflow-y: auto;
   scroll-behavior: auto;
@@ -131,6 +131,11 @@
 .container-history {
   cursor: pointer;
 }
-.my-checkbox{
+
+.my-checkbox {
   margin-top: 2px;
+}
+
+.iOzk7 {
+  margin-left: -120px !important;
 }
