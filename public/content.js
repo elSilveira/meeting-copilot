@@ -75,7 +75,7 @@ function run() {
   }
 
 
-  var stringSize = 550;
+  var stringSize = 350;
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
     let actual = history.get(teller) ?? '';
