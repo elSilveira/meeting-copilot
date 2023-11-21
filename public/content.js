@@ -391,7 +391,7 @@ function run() {
         messages: [
           {
             "role": "system",
-            "content": `Return as Website in HTML with topics following: ${prompt}`
+            "content": `Return as Website in HTML with sections spliting in topics, following: ${prompt}`
           },
           {
             "role": "user",
