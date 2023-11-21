@@ -119,6 +119,7 @@
 
 .label-history {
   font-size: 12px;
+  cursor: pointer;
 }
 
 .p-history {
@@ -126,6 +127,7 @@
   display: flex;
   align-items: start;
   justify-content: start;
+  margin: 5px 0;
 }
 
 .container-history {

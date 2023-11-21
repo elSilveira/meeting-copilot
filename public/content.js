@@ -19,7 +19,10 @@ chrome.runtime.onMessage.addListener((event) => {
 })
 let firstActivation = true;
 let history = new Map();
+let printHistory = [];
+let selectedHistory = [];
 let text = [];
+
 function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
     OPENAI_API_KEY = ev
@@ -75,15 +78,13 @@ function run() {
   }
 
 
-  var stringSize = 350;
+  var stringSize = 850;
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
     let actual = history.get(teller) ?? '';
-    let selected = false
 
     if (actual && actual.length > 0) {
       let treating = actual[actual.length - 1];
-      selected = treating.selected
       history.get(teller).pop()
       nt = mergeStringsRemoveDuplicates(treating.value, nt)
     }
@@ -91,11 +92,10 @@ function run() {
 
     setHistory = (hist) => {
       if (history.get(teller)) {
-        history.get(teller).push({ selected: selected, printed: false, value: hist });
-        selected = false;
+        history.get(teller).push({ printed: false, value: hist });
       }
       else
-        history.set(teller, [{ selected: false, printed: false, value: hist }]);
+        history.set(teller, [{ printed: false, value: hist }]);
     }
 
     let nextIndex;
@@ -117,57 +117,101 @@ function run() {
     if (nt.length > 0)
       setHistory(nt);
 
+    setPrintHistory();
   }
 
-  function selectItem(key, index) {
-    const historyEntry = history.get(key);
+  function setPrintHistory() {
+    printHistory = [];
 
-    if (historyEntry && historyEntry[index]) {
-      historyEntry[index].selected = !historyEntry[index].selected;
-    } else {
-      console.error("Invalid key or index provided.");
+    function breakText(text) {
+      const sentenceEnders = new Set(['.', '!', '?']);
+      const minChunkLength = 45;
+      let result = [];
+      let currentChunk = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        currentChunk += char;
+
+        if (currentChunk.length >= minChunkLength && sentenceEnders.has(char) && i < text.length - 1 && text[i + 1] === ' ') {
+          result.push(currentChunk.trim());
+          currentChunk = '';
+          // Skip the space after the sentence end
+          i++;
+        }
+      }
+
+      if (currentChunk.trim() !== '') {
+        result.push(currentChunk.trim());
+      }
+
+      return result;
+    }
+    index = 0;
+    for (const [key, items] of history.entries()) {
+      items.forEach(value => {
+        const chunks = breakText(value.value);
+        chunks.forEach((chunk) => {
+          printHistory.push({ key, selected: selectedHistory.indexOf(index) > -1, value: chunk });
+          index++
+        });
+      });
     }
   }
 
-  var inputBox = (item, key, index) => {
-    let inp = document.createElement('input')
-    let par = document.createElement('p')
-    let lab = document.createElement('label')
-    lab.classList.add('label-history')
-    par.classList.add('p-history')
-
-
-    inp.classList.add('my-checkbox')
-    inp.type = 'checkbox'
-    if (item.selected) inp.checked = true;
-    par.onclick = () => { selectItem(key, index); printText() }
-
-
-    lab.innerHTML = item.value + '<br>';
-
-    par.append(inp)
-    par.append(lab)
-
-    return par
+  function selectItem(key) {
+    if (selectedHistory.indexOf(key) > -1)
+      selectedHistory = selectedHistory.filter(i => i != key)
+    else
+      selectedHistory.push(key)
+    setPrintHistory();
   }
+
+  function inputBox(selected, value, index) {
+    const inp = document.createElement('input');
+    const par = document.createElement('p');
+    const lab = document.createElement('label');
+
+    lab.classList.add('label-history');
+    par.classList.add('p-history');
+    inp.classList.add('my-checkbox');
+
+    inp.type = 'checkbox';
+    inp.checked = selected;
+
+    par.onclick = () => {
+      selectItem(index);
+      printText();
+    };
+
+    lab.innerHTML = value;
+    par.append(inp, lab);
+    return par;
+  }
+
   function printText() {
-    let view = getView();
-    view.innerHTML = ''
-    Array.from(history).forEach(
-      ([key, value]) => {
-        let res = document.createElement('div')
-        res.classList.add('container-history')
-        let nam = document.createElement('span')
-        nam.innerHTML = key;
-        res.append(nam)
-        value.forEach((item, index) => {
-          res.append(inputBox(item, key, index));
-        })
-        view.append(res)
-      }
-    );
-    view.scrollTop = getView().scrollHeight;
+    const view = getView();
+    view.innerHTML = '';
+    let last;
+    printHistory.forEach(({ key, selected, value }, index) => {
+      const res = document.createElement('div');
+      res.classList.add('container-history');
+
+      const nam = document.createElement('span');
+      nam.innerHTML = key;
+      if (last != key)
+        res.append(nam, inputBox(selected, value, index));
+      else
+        res.append(inputBox(selected, value, index));
+      last = key;
+
+      view.append(res);
+
+    });
+
+    view.scrollTop = view.scrollHeight;
   }
+
   function readText() {
     try {
       if (firstActivation) {
@@ -220,6 +264,7 @@ function run() {
     let alert = document.getElementsByClassName('alert-msg')[0];
     alert.innerHTML = text;
     alert.style.color = Array.from(alertType).map(([key, value]) => { if (key == type) return value }).join() ?? 'red'
+
     if (time) {
       setTimeout(() => {
         alert.innerHTML = ' ';
@@ -308,6 +353,8 @@ function run() {
       if (sbs) sbs.forEach(sb => sb.innerHTML = '')
       getView().innerHTML = '';
       history = new Map();
+      printHistory = new Map();
+      selectedHistory = []
     }
     myBtn.classList.add('my-btn')
     return myBtn
@@ -325,7 +372,8 @@ function run() {
   getView().innerHTML = ''
 
   function sendMessage(prompt) {
-    let message = Array.from(history).map(([key, value]) => value.filter((e) => e.selected).map(val => val.value)).join('');
+    let message = printHistory.filter(item => item.selected).map((item) => item.value).join('');
+
     if (!message || message.length == '') {
       updateAlert('Select a message!', 15, alertType.warning)
       return
@@ -343,7 +391,7 @@ function run() {
         messages: [
           {
             "role": "system",
-            "content": `Return as Website in HTML following: ${prompt}`
+            "content": `Return as Website in HTML with topics following: ${prompt}`
           },
           {
             "role": "user",
@@ -380,5 +428,4 @@ function run() {
 
   // Call readText initially and then use setInterval for repeated calls
   setTimeout(readText, 2000);
-
 }
