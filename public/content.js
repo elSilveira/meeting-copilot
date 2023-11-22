@@ -55,28 +55,28 @@ function run() {
 
     return resultStr;
   }
-  function removeDuplicateWords(inputStr) {
-    // Split the input string into an array of words
-    let words = inputStr.split(/\s+/);
 
-    // Create an object to store unique words
-    let uniqueWords = {};
+  function removeDuplicateContexts(inputStr) {
+    // Split the input string into an array of contexts
+    let contexts = inputStr.split(/[.!?]\s+/);
+
+    // Create an object to store unique contexts
+    let uniqueContexts = {};
 
     // Filter out duplicates while preserving order
-    let uniqueWordsArray = words.filter(word => {
-      if (!uniqueWords[word]) {
-        uniqueWords[word] = true;
+    let uniqueContextsArray = contexts.filter(context => {
+      if (!uniqueContexts[context]) {
+        uniqueContexts[context] = true;
         return true;
       }
       return false;
     });
 
-    // Join the unique words into a string
-    let resultStr = uniqueWordsArray.join(' ');
+    // Join the unique contexts into a string
+    let resultStr = uniqueContextsArray.join('. ');
 
     return resultStr;
   }
-
 
   var stringSize = 850;
   function addToHistory(teller, nt) {
@@ -88,7 +88,7 @@ function run() {
       history.get(teller).pop()
       nt = mergeStringsRemoveDuplicates(treating.value, nt)
     }
-    nt = removeDuplicateWords(nt)
+    nt = removeDuplicateContexts(nt)
 
     setHistory = (hist) => {
       if (history.get(teller)) {
@@ -405,7 +405,7 @@ function run() {
         if (data.error) {
           switch (data.error.code) {
             case ("invalid_api_key"):
-              updateAlert('Invalid OpenAI Key!', 15, alertType.error)
+              updateAlert('Invalid OpenAI Key! Click in Extension to update!', 15, alertType.error)
               return
             case ("insufficient_quota"):
               updateAlert('You exceeded your current quota!', 15, alertType.error)
