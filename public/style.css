@@ -6,11 +6,8 @@
 }
 
 .collapse-button {
-  position: absolute;
-  top: 25px;
   cursor: pointer;
   font-size: 20px;
-  right: 25px;
   text-shadow: -2px -0.5px 3px #13111180;
   font-size: 20px;
   display: flex;
@@ -140,4 +137,50 @@
 
 .iOzk7 {
   margin-left: -120px !important;
+}
+
+.my-header {
+  position: absolute;
+  display: flex;
+  justify-content: end;
+  top: 25px;
+  right: 25px;
+  display: flex;
+  align-items: end;
+  gap: 10px;
+}
+
+.my-header img {
+  cursor: pointer;
+  width: 25px;
+  height: 21px;
+}
+
+.my-actors {
+  margin-right: 5px;
+  background: rgba(235, 235, 235, 0.85);
+  padding: 5px 10px;
+  border-radius: 11px;
+  cursor: pointer;
+  position: relative;
+}
+
+.my-dropdown {
+  flex-direction: column;
+  position: absolute;
+  top: 30px;
+  background: rgba(235, 235, 235, 0.85);
+  right: 0;
+  border-radius: 5px;
+  gap: 5px;
+}
+
+.my-dropdown span {
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.my-dropdown span:hover {
+  background: rgba(220, 219, 219, 0.85);
 }
