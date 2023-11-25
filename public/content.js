@@ -1,6 +1,5 @@
 /*global chrome*/
 var OPENAI_API_KEY = "";
-
 let _url = window.location.href;
 if (_url.includes('meet.google') || _url.includes('teams.live')) {
   run();
@@ -21,7 +20,9 @@ let firstActivation = true;
 let history = new Map();
 let printHistory = [];
 let selectedHistory = [];
+let myActors = new Set();
 let text = [];
+let selectedActor = '';
 
 function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
@@ -29,7 +30,7 @@ function run() {
   })
 
   function extractTextFromSpans(elements) {
-    return Array.from(elements).map(element => element.innerText).join(' ');
+    return elements.innerText;
   }
   function mergeStringsRemoveDuplicates(str1, str2) {
     // Combine the two strings
@@ -82,9 +83,11 @@ function run() {
   function addToHistory(teller, nt) {
     if (nt.trim('') === '') return
     let actual = history.get(teller) ?? '';
+    let time;
 
     if (actual && actual.length > 0) {
       let treating = actual[actual.length - 1];
+      time = treating.time;
       history.get(teller).pop()
       nt = mergeStringsRemoveDuplicates(treating.value, nt)
     }
@@ -92,10 +95,10 @@ function run() {
 
     setHistory = (hist) => {
       if (history.get(teller)) {
-        history.get(teller).push({ printed: false, value: hist });
+        history.get(teller).push({ printed: false, value: hist, time: time ?? Date.now() });
       }
       else
-        history.set(teller, [{ printed: false, value: hist }]);
+        history.set(teller, [{ printed: false, value: hist, time: time ?? Date.now() }]);
     }
 
     let nextIndex;
@@ -148,15 +151,16 @@ function run() {
       return result;
     }
     index = 0;
-    for (const [key, items] of history.entries()) {
-      items.forEach(value => {
+    Array.from(history).forEach(([key, items]) => {
+      if (selectedActor && selectedActor != key) return
+      Array.from(items).forEach(value => {
         const chunks = breakText(value.value);
         chunks.forEach((chunk) => {
-          printHistory.push({ key, selected: selectedHistory.indexOf(index) > -1, value: chunk });
+          printHistory.push({ key, selected: selectedHistory.indexOf(index) > -1, value: chunk, time: value.time });
           index++
         });
       });
-    }
+    })
   }
 
   function selectItem(key) {
@@ -167,7 +171,18 @@ function run() {
     setPrintHistory();
   }
 
-  function inputBox(selected, value, index) {
+  function formatTime(timestamp) {
+    // Create a Date object from the timestamp
+    let date = new Date(timestamp);
+
+    // Extract hours, minutes, and seconds
+    const components = ['getHours', 'getMinutes'];
+    let formattedTime = components.map(component => date[component]().toString().padStart(2, '0')).join(':');
+
+    return formattedTime;
+  }
+
+  function inputBox(selected, value, index, time, myHash) {
     const inp = document.createElement('input');
     const par = document.createElement('p');
     const lab = document.createElement('label');
@@ -184,26 +199,34 @@ function run() {
       printText();
     };
 
-    lab.innerHTML = value;
+    lab.innerHTML = `${formatTime(time)}.${myHash}: ${value}`;
     par.append(inp, lab);
     return par;
   }
 
   function printText() {
+    let newHash = 0;
     const view = getView();
     view.innerHTML = '';
     let last;
-    printHistory.forEach(({ key, selected, value }, index) => {
+    let nextTime;
+    let myHash = 1;
+    printHistory.forEach(({ key, selected, value, time }, index) => {
+      if (nextTime != time) {
+        nextTime = time;
+        myHash = 1;
+      }
       const res = document.createElement('div');
       res.classList.add('container-history');
 
       const nam = document.createElement('span');
       nam.innerHTML = key;
       if (last != key)
-        res.append(nam, inputBox(selected, value, index));
+        res.append(nam, inputBox(selected, value, index, time, myHash));
       else
-        res.append(inputBox(selected, value, index));
+        res.append(inputBox(selected, value, index, time, myHash));
       last = key;
+      myHash++;
 
       view.append(res);
 
@@ -242,24 +265,30 @@ function run() {
 
     // Check if at least one teller element is found
     if (tellerElements.length > 0) {
+      tellerElements.forEach((el, index) => {
+        teller = el.innerText
+        myActors.add(teller)
+        // Check if at least one subtitle element is found
+        if (subtitleElements.length > 0) {
+          let extactedText = extractTextFromSpans(subtitleElements[index]);
+          // text.push(teller, extactedText);
+          addToHistory(teller, extactedText)
+        }
+      })
+      printText()
       // Use the first teller element as the single teller
-      teller = tellerElements[0].innerText;
 
-      // Check if at least one subtitle element is found
-      if (subtitleElements.length > 0) {
-        let extactedText = extractTextFromSpans(subtitleElements);
-        // text.push(teller, extactedText);
-        addToHistory(teller, extactedText)
-        printText()
-      }
     }
     setTimeout(readText, 3000);
   }
+
+
   alertType = {
     success: 'green',
     warning: 'yellow',
     error: 'red'
   }
+
   function updateAlert(text, time, type) {
     let alert = document.getElementsByClassName('alert-msg')[0];
     alert.innerHTML = text;
@@ -271,6 +300,7 @@ function run() {
       }, time * 1000);
     }
   }
+
   function createAlert(text) {
     var alert = document.createElement('div');
     alert.innerHTML = text ?? ' ';
@@ -289,8 +319,11 @@ function run() {
       myView.classList.add('my-view')
       myButtonsView.classList.add('my-btn-view')
       myMainView.classList.add('my-main-view')
-
-      myMainView.append(collapseView(myMainView))
+      let header = document.createElement(`div`)
+      header.classList.add(`my-header`)
+      header.append(actors())
+      header.append(collapseView(myMainView))
+      myMainView.append(header)
       myMainView.append(myView)
       myMainView.append(createAlert())
       myButtonsView.append(createRequester())
@@ -299,6 +332,36 @@ function run() {
       document.body.appendChild(myMainView)
     }
     return myView
+  }
+
+  function actors() {
+    let container = document.createElement(`div`);
+    let dropdown = document.createElement(`div`);
+    let selected = document.createElement(`div`);
+    container.classList.add(`my-actors`)
+    selected.innerHTML = 'All Actors'
+    dropdown.classList.add(`my-dropdown`)
+    dropdown.style.display = 'none';
+    container.onclick = (ev) => {
+      if (dropdown.style.display == 'flex')
+        dropdown.style.display = 'none';
+      else {
+        dropdown.innerHTML = Array.from(myActors).map(it => `<span>${it}</span>`).join('')
+        dropdown.innerHTML += `<span>All Actors</span>`
+        dropdown.style.display = 'flex';
+      }
+    }
+    dropdown.onclick = (ev) => {
+      let actor = ev.target.innerText;
+      if (history.get(actor)) selectedActor = actor;
+      else selectedActor = null;
+      selected.innerHTML = selectedActor ?? 'All Actors'
+      setPrintHistory()
+      printText();
+    }
+    container.append(dropdown)
+    container.append(selected)
+    return container
   }
   function collapseView(view) {
     let collapseView = document.createElement('div');
@@ -326,6 +389,7 @@ function run() {
     collapseView.append(collapseViewIc)
     return collapseView
   }
+
   function createRequester() {
     let myBtns = document.createElement('div');
     myBtns.classList.add('my-btns');
@@ -344,6 +408,7 @@ function run() {
     })
     return myBtns
   }
+
   function createClear() {
     let myBtn = document.createElement('div');
     myBtn.id = 'myClrBtn'
@@ -354,21 +419,23 @@ function run() {
       getView().innerHTML = '';
       history = new Map();
       printHistory = new Map();
-      selectedHistory = []
+      selectedHistory = [];
     }
     myBtn.classList.add('my-btn')
     return myBtn
   }
+
   function getBotView() {
     let myBotView = document.getElementById('myBotView');
     if (!myBotView) {
       myBotView = document.createElement('div');
       myBotView.id = 'myBotView'
-      myBotView.classList.add('my-bot-view')
+      myBotView.classList.add(['my-bot-view'])
       document.body.appendChild(myBotView)
     }
     return myBotView
   }
+
   getView().innerHTML = ''
 
   function sendMessage(prompt) {
@@ -425,7 +492,6 @@ function run() {
       });
 
   }
-
   // Call readText initially and then use setInterval for repeated calls
   setTimeout(readText, 2000);
 }

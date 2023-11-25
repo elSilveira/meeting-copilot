@@ -34,7 +34,7 @@
         "src",
         "public"
       ],
-      "extensions": "js,jsx"
+      "extensions": "js,jsx,css"
     }
   },
   "browserslist": {
