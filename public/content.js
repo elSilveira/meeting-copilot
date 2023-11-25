@@ -273,9 +273,9 @@ function run() {
           let extactedText = extractTextFromSpans(subtitleElements[index]);
           // text.push(teller, extactedText);
           addToHistory(teller, extactedText)
-          printText()
         }
       })
+      printText()
       // Use the first teller element as the single teller
 
     }
@@ -356,6 +356,7 @@ function run() {
       if (history.get(actor)) selectedActor = actor;
       else selectedActor = null;
       selected.innerHTML = selectedActor ?? 'All Actors'
+      setPrintHistory()
       printText();
     }
     container.append(dropdown)
