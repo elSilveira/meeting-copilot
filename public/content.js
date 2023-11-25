@@ -356,6 +356,7 @@ function run() {
       if (history.get(actor)) selectedActor = actor;
       else selectedActor = null;
       selected.innerHTML = selectedActor ?? 'All Actors'
+      printText();
     }
     container.append(dropdown)
     container.append(selected)

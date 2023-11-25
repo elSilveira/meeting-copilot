@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "version": "1.1",
-  "name": "Career Copilot",
-  "description": "AI-powered career copilot: Optimize, track, and receive tailored insights for a guided success story.",
+  "version": "1.2",
+  "name": "Career Copilot: Unlocking Your Brilliance",
+  "description": "AI-driven career companion that enhances your meetings – providing real-time insights and guidance for a success journey.",
   "permissions": [
     "storage"
   ],
