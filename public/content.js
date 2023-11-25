@@ -1,117 +1,5 @@
 /*global chrome*/
 var OPENAI_API_KEY = "";
-
-const languages = {
-  "Afrikaans": { "value": "Afrikaans", "country": "south-africa" },
-  "Albanian": { "value": "Shqip", "country": "albania" },
-  "Amharic": { "value": "አማርኛ", "country": "ethiopia" },
-  "Arabic": { "value": "العربية", "country": "arab-world" },
-  "Armenian": { "value": "հայերեն", "country": "armenia" },
-  "Azerbaijani": { "value": "Azərbaycan", "country": "azerbaijan" },
-  "Basque": { "value": "Euskara", "country": "basque-country" },
-  "Belarusian": { "value": "Беларуская", "country": "belarus" },
-  "Bengali": { "value": "বাংলা", "country": "bangladesh" },
-  "Bosnian": { "value": "Bosanski", "country": "bosnia-and-herzegovina" },
-  "Bulgarian": { "value": "Български", "country": "bulgaria" },
-  "Catalan": { "value": "Català", "country": "catalonia" },
-  "Cebuano": { "value": "Cebuano", "country": "philippines" },
-  "Chichewa": { "value": "Chichewa", "country": "malawi" },
-  "Chinese (Simplified)": { "value": "中文（简体）", "country": "china" },
-  "Chinese (Traditional)": { "value": "中文（繁體）", "country": "taiwan" },
-  "Corsican": { "value": "Corsu", "country": "corsica" },
-  "Croatian": { "value": "Hrvatski", "country": "croatia" },
-  "Czech": { "value": "Čeština", "country": "czech-republic" },
-  "Danish": { "value": "Dansk", "country": "denmark" },
-  "Dutch": { "value": "Nederlands", "country": "netherlands" },
-  "English": { "value": "English", "country": "united-kingdom" },
-  "Esperanto": { "value": "Esperanto", "country": "constructed-international" },
-  "Estonian": { "value": "Eesti", "country": "estonia" },
-  "Filipino": { "value": "Filipino", "country": "philippines" },
-  "Finnish": { "value": "Suomi", "country": "finland" },
-  "French": { "value": "Français", "country": "france" },
-  "Frisian": { "value": "Frysk", "country": "frisia" },
-  "Galician": { "value": "Galego", "country": "galicia" },
-  "Georgian": { "value": "ქართული", "country": "georgia" },
-  "German": { "value": "Deutsch", "country": "germany" },
-  "Greek": { "value": "Ελληνικά", "country": "greece" },
-  "Gujarati": { "value": "ગુજરાતી", "country": "india" },
-  "Haitian Creole": { "value": "Kreyòl Ayisyen", "country": "haiti" },
-  "Hausa": { "value": "Hausa", "country": "nigeria" },
-  "Hawaiian": { "value": "ʻŌlelo Hawaiʻi", "country": "hawaii" },
-  "Hebrew": { "value": "עברית", "country": "israel" },
-  "Hindi": { "value": "हिन्दी", "country": "india" },
-  "Hmong": { "value": "Hmong", "country": "china" },
-  "Hungarian": { "value": "Magyar", "country": "hungary" },
-  "Icelandic": { "value": "Íslenska", "country": "iceland" },
-  "Igbo": { "value": "Igbo", "country": "nigeria" },
-  "Indonesian": { "value": "Bahasa Indonesia", "country": "indonesia" },
-  "Irish": { "value": "Gaeilge", "country": "ireland" },
-  "Italian": { "value": "Italiano", "country": "italy" },
-  "Japanese": { "value": "日本語", "country": "japan" },
-  "Javanese": { "value": "Jawa", "country": "java" },
-  "Kannada": { "value": "ಕನ್ನಡ", "country": "india" },
-  "Kazakh": { "value": "Қазақша", "country": "kazakhstan" },
-  "Khmer": { "value": "ភាសាខ្មែរ", "country": "cambodia" },
-  "Kinyarwanda": { "value": "Kinyarwanda", "country": "rwanda" },
-  "Korean": { "value": "한국어", "country": "south-korea" },
-  "Kurdish (Kurmanji)": { "value": "Kurdî (Kurmancî)", "country": "kurdistan" },
-  "Kyrgyz": { "value": "Кыргызча", "country": "kyrgyzstan" },
-  "Lao": { "value": "ລາວ", "country": "laos" },
-  "Latin": { "value": "Latine", "country": "ancient-rome" },
-  "Latvian": { "value": "Latviešu", "country": "latvia" },
-  "Lithuanian": { "value": "Lietuvių", "country": "lithuania" },
-  "Luxembourgish": { "value": "Lëtzebuergesch", "country": "luxembourg" },
-  "Macedonian": { "value": "Македонски", "country": "north-macedonia" },
-  "Malagasy": { "value": "Malagasy", "country": "madagascar" },
-  "Malay": { "value": "Bahasa Melayu", "country": "malaysia" },
-  "Malayalam": { "value": "മലയാളം", "country": "india" },
-  "Maltese": { "value": "Malti", "country": "malta" },
-  "Maori": { "value": "Māori", "country": "new-zealand" },
-  "Marathi": { "value": "मराठी", "country": "india" },
-  "Mongolian": { "value": "Монгол", "country": "mongolia" },
-  "Myanmar (Burmese)": { "value": "မြန်မာဘာသာ", "country": "myanmar" },
-  "Nepali": { "value": "नेपाली", "country": "nepal" },
-  "Norwegian": { "value": "Norsk", "country": "norway" },
-  "Odia (Oriya)": { "value": "ଓଡ଼ିଆ", "country": "india" },
-  "Pashto": { "value": "پښتو", "country": "afghanistan" },
-  "Persian": { "value": "فارسی", "country": "iran" },
-  "Polish": { "value": "Polski", "country": "poland" },
-  "Portuguese": { "value": "Português", "country": "portugal" },
-  "Punjabi": { "value": "ਪੰਜਾਬੀ", "country": "india" },
-  "Romanian": { "value": "Română", "country": "romania" },
-  "Russian": { "value": "Русский", "country": "russia" },
-  "Samoan": { "value": "Gagana Samoa", "country": "samoa" },
-  "Scots Gaelic": { "value": "Gàidhlig", "country": "scotland" },
-  "Serbian": { "value": "Српски", "country": "serbia" },
-  "Sesotho": { "value": "Sesotho", "country": "lesotho" },
-  "Shona": { "value": "Shona", "country": "zimbabwe" },
-  "Sindhi": { "value": "سنڌي", "country": "pakistan" },
-  "Sinhala": { "value": "සිංහල", "country": "sri-lanka" },
-  "Slovak": { "value": "Slovenčina", "country": "slovakia" },
-  "Slovenian": { "value": "Slovenščina", "country": "slovenia" },
-  "Somali": { "value": "Soomaali", "country": "somalia" },
-  "Spanish": { "value": "Español", "country": "spain" },
-  "Sundanese": { "value": "Basa Sunda", "country": "sunda" },
-  "Swahili": { "value": "Kiswahili", "country": "tanzania" },
-  "Swedish": { "value": "Svenska", "country": "sweden" },
-  "Tajik": { "value": "Тоҷикӣ", "country": "tajikistan" },
-  "Tamil": { "value": "தமிழ்", "country": "india" },
-  "Telugu": { "value": "తెలుగు", "country": "india" },
-  "Thai": { "value": "ไทย", "country": "thailand" },
-  "Turkish": { "value": "Türkçe", "country": "turkey" },
-  "Ukrainian": { "value": "Українська", "country": "ukraine" },
-  "Urdu": { "value": "اردو", "country": "pakistan" },
-  "Uzbek": { "value": "Oʻzbekcha", "country": "uzbekistan" },
-  "Vietnamese": { "value": "Tiếng Việt", "country": "vietnam" },
-  "Welsh": { "value": "Cymraeg", "country": "wales" },
-  "Xhosa": { "value": "isiXhosa", "country": "south-africa" },
-  "Yiddish": { "value": "ייִדיש", "country": "israel" },
-  "Yoruba": { "value": "Yorùbá", "country": "nigeria" },
-  "Zulu": { "value": "isiZulu", "country": "south-africa" }
-}
-
-const actualLocale = languages.English;
-
 let _url = window.location.href;
 if (_url.includes('meet.google') || _url.includes('teams.live')) {
   run();
@@ -434,7 +322,6 @@ function run() {
       let header = document.createElement(`div`)
       header.classList.add(`my-header`)
       header.append(actors())
-      header.append(locale(actualLocale.country))
       header.append(collapseView(myMainView))
       myMainView.append(header)
       myMainView.append(myView)
@@ -473,23 +360,6 @@ function run() {
     container.append(dropdown)
     container.append(selected)
     return container
-  }
-  function createImg(src) {
-    var img = document.createElement("img");
-    img.classList.add('default-img')
-    img.setAttribute(
-      "src",
-      src
-    );
-    return img;
-  }
-  function locale(country) {
-    let locale = document.createElement('div');
-    locale.classList.add(`my-locale`)
-    let img = createImg(getFlag(country))
-    img.classList.add('my-flag')
-    locale.append(img);
-    return locale
   }
   function collapseView(view) {
     let collapseView = document.createElement('div');
@@ -620,11 +490,6 @@ function run() {
       });
 
   }
-
-  function getFlag(country) {
-    return `https://cdn.countryflags.com/thumbs/united-states-of-america/flag-square-250.png`
-  }
-
   // Call readText initially and then use setInterval for repeated calls
   setTimeout(readText, 2000);
 }
