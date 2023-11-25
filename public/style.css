@@ -101,7 +101,7 @@
 }
 
 .collapsed {
-  width: 1px !important;
+  width: 0px !important;
   padding: 0 !important;
 }
 
@@ -117,6 +117,7 @@
 .label-history {
   font-size: 12px;
   cursor: pointer;
+  color: #171717;
 }
 
 .p-history {
@@ -155,7 +156,9 @@
   width: 25px;
   height: 21px;
 }
-
+.collapsed .my-actors{
+  display: none;
+}
 .my-actors {
   margin-right: 5px;
   background: rgba(235, 235, 235, 0.85);
