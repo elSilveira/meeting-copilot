@@ -341,7 +341,7 @@ function run() {
     editableElement.innerHTML = initialHtml;
     element.append(editableElement)
     Array.from([{ name: `Recruiter`, type: myInitialPrompts.recruiter },
-    { name: `Candidate`, type: myInitialPrompts.recruiter }]).forEach(
+    { name: `Candidate`, type: myInitialPrompts.candidate }]).forEach(
       item => {
         buttons.append(createInitialButton(editableElement, item.name, item.type))
       }
