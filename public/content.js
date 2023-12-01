@@ -1,7 +1,7 @@
 /*global chrome*/
 var OPENAI_API_KEY = "";
 let _url = window.location.href;
-if (_url.includes('meet.google') || _url.includes('teams.live')) {
+if (_url.includes('meet.google') || _url.includes('teams.live') || _url.includes('teams.microsoft')) {
   run();
 }
 chrome.runtime.onMessage.addListener((event) => {
