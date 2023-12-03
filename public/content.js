@@ -1,7 +1,7 @@
 /*global chrome*/
 var OPENAI_API_KEY = "";
 let _url = window.location.href;
-if (_url.includes('meet.google') || _url.includes('teams.live')) {
+if (_url.includes('meet.google') || _url.includes('teams.live') || _url.includes('teams.microsoft')) {
   run();
 }
 chrome.runtime.onMessage.addListener((event) => {
@@ -16,13 +16,21 @@ chrome.runtime.onMessage.addListener((event) => {
     }
   }
 })
+
+
 let firstActivation = true;
+let myRequest = ``;
 let history = new Map();
+let myActors = new Set();
 let printHistory = [];
 let selectedHistory = [];
-let myActors = new Set();
 let text = [];
 let selectedActor = '';
+const alertType = {
+  success: 'green',
+  warning: 'yellow',
+  error: 'red'
+}
 
 function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
@@ -32,6 +40,7 @@ function run() {
   function extractTextFromSpans(elements) {
     return elements.innerText;
   }
+
   function mergeStringsRemoveDuplicates(str1, str2) {
     // Combine the two strings
     let combinedStr = str1 + " " + str2;
@@ -282,13 +291,6 @@ function run() {
     setTimeout(readText, 3000);
   }
 
-
-  alertType = {
-    success: 'green',
-    warning: 'yellow',
-    error: 'red'
-  }
-
   function updateAlert(text, time, type) {
     let alert = document.getElementsByClassName('alert-msg')[0];
     alert.innerHTML = text;
@@ -307,6 +309,65 @@ function run() {
     alert.classList.add('alert-msg')
     return alert
   }
+
+  let initialHtml = `<div>
+                      <h1>Initial Context</h1>
+                      <p>Insert the initial context that you can use during your meeting. This could be from an email, meeting notes, job post, etc.</p>
+                    </div>
+                    <div>
+                    <h2>Job Post</h2>
+                    <div>
+                        Position: Productivity Specialist<br>
+                        Company: ABC Company<br>
+                        Location: New York, NY<br><br>
+
+                        We are seeking a dynamic individual to join our team as a Productivity Specialist. The ideal candidate will have experience in optimizing meeting processes and introducing innovative tools. Familiarity with "ProductivityPro" is a plus.
+                        <br><br>
+                        Responsibilities:<br>
+                        - Implementing and promoting the use of "ProductivityPro"<br>
+                        - Conducting training sessions for team members<br>
+                        - Monitoring and evaluating the impact on productivity<br><br>
+                    </div>
+                    </div>`;
+  function createInitialContext() {
+    let element = document.createElement(`div`)
+    let editableElement = document.createElement(`div`)
+    let buttons = document.createElement(`div`)
+    buttons.style.display = 'flex';
+    editableElement.contentEditable = true;
+    element.id = `txtInitiaInput`
+    element.classList.add(`my-initial-input`)
+    editableElement.classList.add(`my-editable-input`)
+    editableElement.innerHTML = initialHtml;
+    element.append(editableElement)
+    Array.from([{ name: `Recruiter`, type: myInitialPrompts.recruiter },
+    { name: `Candidate`, type: myInitialPrompts.candidate }]).forEach(
+      item => {
+        buttons.append(createInitialButton(editableElement, item.name, item.type))
+      }
+    )
+    element.append(buttons)
+    return element
+  }
+  function createInitialButton(element, name, type) {
+    let button = document.createElement(`button`)
+    button.innerHTML = `Generate Guide as (${name})`
+    button.onclick = (ev) => {
+      sendMessage(type, element.innerText, true)
+    }
+    return button
+  }
+
+  function createInput() {
+    let input = document.createElement(`input`)
+    input.type = `text`
+    input.id = `txtInput`
+    input.classList.add(`my-input`)
+    input.addEventListener(`keyup`, ev => myRequest = ev.target.value)
+    input.placeholder = `Additional details (e.g., Language, Key Topics, Context, Tone, Audience)`
+    return input
+  }
+
   function getView() {
     let myView = document.getElementById('myView');
     if (!myView) {
@@ -326,10 +387,12 @@ function run() {
       myMainView.append(header)
       myMainView.append(myView)
       myMainView.append(createAlert())
+      myMainView.append(createInput())
       myButtonsView.append(createRequester())
       myButtonsView.append(createClear())
       myMainView.append(myButtonsView)
       document.body.appendChild(myMainView)
+      document.body.append(createInitialContext())
     }
     return myView
   }
@@ -363,6 +426,7 @@ function run() {
     container.append(selected)
     return container
   }
+
   function collapseView(view) {
     let collapseView = document.createElement('div');
     collapseView.classList.add('collapse-button');
@@ -389,6 +453,19 @@ function run() {
     collapseView.append(collapseViewIc)
     return collapseView
   }
+
+  let myInitialPrompts = {
+    recruiter: `You are the recruiter interviewig the candidate and the context on following is the role description. 
+      create questions as an interviewer for the following context focusing on technical skills 
+      going deeper responding as a pro, then creating answers and hits that differentiate a senior, 
+      then responding with just the answers and hits.
+      Show it like a website, Split into topics, add hints and bullet points, easy and short and simple and clear.`,
+    candidate: `You are being interviewed and the context on following is the role description, 
+      create questions as an interviewer for the following context focusing on technical skills 
+      going deeper responding as a pro, then creating answers and hits that differentiate a senior, 
+      then responding with just the answers and hits.      
+      Show it like a website, Split into topics, add hints and bullet points, easy and short and simple and clear.`
+  };
 
   function createRequester() {
     let myBtns = document.createElement('div');
@@ -438,14 +515,36 @@ function run() {
 
   getView().innerHTML = ''
 
-  function sendMessage(prompt) {
-    let message = printHistory.filter(item => item.selected).map((item) => item.value).join('');
+  function sendMessage(prompt, message = '', inital = false) {
+    let historyMessage = printHistory.filter(item => item.selected).map((item) => item.value).join('');
+    if (historyMessage && historyMessage.length != 0) message = historyMessage
 
-    if (!message || message.length == '') {
+    if (message.length == 0) {
       updateAlert('Select a message!', 15, alertType.warning)
       return
     }
 
+    let messages = [
+      {
+        "role": "system",
+        "content": `Return as Website in HTML with sections spliting in topics, following: ${prompt}`
+      },
+      {
+        "role": "user",
+        "content":
+          `${message}`
+      }
+    ]
+    if (myRequest) {
+      messages.push(
+        {
+          "role": "user",
+          "content":
+            `${myRequest}`
+        }
+      )
+    }
+    updateAlert('Requesting...!', null, alertType.success)
     updateAlert('Requesting...!', null, alertType.success)
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -455,17 +554,7 @@ function run() {
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
-        messages: [
-          {
-            "role": "system",
-            "content": `Return as Website in HTML with sections spliting in topics, following: ${prompt}`
-          },
-          {
-            "role": "user",
-            "content":
-              `About: ${message}`
-          }
-        ]
+        messages: messages
       })
     }).then((response) => response.json())
       .then((data) => {
@@ -483,7 +572,10 @@ function run() {
           }
         }
         const chatbotMessage = data.choices[0].message.content;
-        getBotView().innerHTML = chatbotMessage;
+        if (inital)
+          document.querySelector('.my-editable-input').innerHTML = chatbotMessage
+        else
+          getBotView().innerHTML = chatbotMessage;
         updateAlert('')
       })
       .catch(error => {
