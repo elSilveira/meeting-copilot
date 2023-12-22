@@ -207,6 +207,7 @@
   body {
     visibility: visible;
   }
+
   #exportButton {
     display: none;
   }
@@ -226,4 +227,22 @@
   height: calc(100% - 51px);
   margin-bottom: 9px;
   scroll-behavior: auto;
+}
+
+.my-paginator-view {
+  display: flex;
+  gap: 5px;
+  justify-content: end;
+  margin-top: -10px;
+  background: #e4e3e3;
+  width: fit-content;
+  margin-left: auto;
+  padding: 0px 5px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px #00000087;
+}
+
+.my-paginator-view div {
+  cursor: pointer;
+  padding: 0 5px;
 }

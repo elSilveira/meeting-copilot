@@ -24,6 +24,7 @@ let myActors = new Set();
 let text = [];
 let selectedActor = '';
 let myRequest = ``;
+let myResposes = new Map();
 
 var alertType = {
   success: 'green',
@@ -94,7 +95,7 @@ function run() {
     let time;
 
     if (actual && actual.length > 0) {
-      let treating = actual[actual.length - 1];
+      let treating = actual[actual.length - 1]; size
       time = treating.time;
       history.get(teller).pop()
       nt = mergeStringsRemoveDuplicates(treating.value, nt)
@@ -482,16 +483,62 @@ function run() {
     myBtn.classList.add('my-btn')
     return myBtn
   }
+  var actualPage = 0;
+  function pageUp() {
+    if (actualPage >= myResposes.size - 1) return
+    actualPage = actualPage + 1
+    let pages = document.getElementById('myPages');
+    pages.innerHTML = `${actualPage + 1} / ${myResposes.size}`;
+    getBotView(true).innerHTML = myResposes.get(actualPage)
+  }
+  function pageDown() {
+    if (actualPage <= 0) return
+    actualPage = actualPage - 1
+    let pages = document.getElementById('myPages');
+    pages.innerHTML = `${actualPage + 1} / ${myResposes.size}`;
+    getBotView(true).innerHTML = myResposes.get(actualPage)
+  }
+  function updatePagination() {
+    let myPagination = document.getElementById('myPagination');
 
-  function getBotView() {
+    if (!myPagination) {
+      let pages = myPagination = document.createElement('div');
+      let arrR = myPagination = document.createElement('div');
+      let arrL = myPagination = document.createElement('div');
+      arrR.innerHTML = '>';
+      arrL.innerHTML = '<';
+      arrL.onclick = () => { pageDown() }
+      arrR.onclick = () => { pageUp() }
+      myPagination = document.createElement('div');
+      myPagination.append(arrL)
+      myPagination.append(pages)
+      myPagination.append(arrR)
+      pages.id = 'myPages';
+      myPagination.id = 'myPagination';
+      myPagination.classList.add(['my-paginator-view'])
+      getBotView().prepend(myPagination)
+    }
+    actualPage = myResposes.size - 1
+    let pages = document.getElementById('myPages');
+    pages.innerHTML = `${actualPage + 1} / ${myResposes.size}`;
+
+    getBotView(true).innerHTML = myResposes.get(myResposes.size - 1)
+  }
+
+  function getBotView(inside = false) {
     let myBotView = document.getElementById('myBotView');
+    let myBotContentView = document.getElementById('myBotContentView');
     if (!myBotView) {
+      myBotContentView = document.createElement('div');
+      myBotContentView.id = 'myBotContentView'
+      myBotContentView.classList.add(['my-content-bot-view'])
       myBotView = document.createElement('div');
       myBotView.id = 'myBotView'
       myBotView.classList.add(['my-bot-view'])
+      myBotView.appendChild(myBotContentView)
       document.body.appendChild(myBotView)
     }
-    return myBotView
+    return inside ? myBotContentView : myBotView
   }
 
   getView().innerHTML = ''
@@ -558,7 +605,8 @@ function run() {
           }
         }
         const chatbotMessage = data.choices[0].message.content;
-        getBotView().innerHTML = chatbotMessage;
+        myResposes.set(myResposes.size, chatbotMessage)
+        updatePagination()
         updateAlert('')
       })
       .catch(error => {
