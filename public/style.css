@@ -242,7 +242,7 @@
   box-shadow: 2px 2px 4px #00000087;
 }
 
-.my-paginator-view div {
+.my-paginator-view .btn {
   cursor: pointer;
   padding: 0 5px;
 }

@@ -516,6 +516,8 @@ function run() {
       pages.id = 'myPages';
       myPagination.id = 'myPagination';
       myPagination.classList.add(['my-paginator-view'])
+      arrL.classList.add(['btn'])
+      arrR.classList.add(['btn'])
       getBotView().prepend(myPagination)
     }
     actualPage = myResposes.size - 1
