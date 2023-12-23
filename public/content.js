@@ -1,5 +1,5 @@
 /*global chrome*/
-var OPENAI_API_KEY = "";
+var API_KEY = "";
 let _url = window.location.href;
 if (_url.includes('meet.google') || _url.includes('teams.live') || _url.includes('teams.microsoft')) {
   run();
@@ -8,10 +8,10 @@ chrome.runtime.onMessage.addListener((event) => {
   if (event) {
     switch (event.action) {
       case 'storage.set':
-        OPENAI_API_KEY = event.key
+        API_KEY = event.key
         break
       case 'storage.delete':
-        OPENAI_API_KEY = ''
+        API_KEY = ''
         break
     }
   }
@@ -65,7 +65,7 @@ function makeElementDraggable(element, draggableArea) {
 
 function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
-    OPENAI_API_KEY = ev
+    API_KEY = ev
   })
 
   // Function to log selected text to console
@@ -485,7 +485,7 @@ function run() {
       let myBtn = document.createElement('div');
       myBtn.id = btn.id
       myBtn.innerHTML = btn.text
-      myBtn.onclick = () => sendMessage(btn.prompt)
+      myBtn.onclick = () => sendMessageGoogle(btn.prompt)
       myBtn.classList.add('my-btn');
       myBtns.append(myBtn)
     })
@@ -674,7 +674,7 @@ function run() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -705,6 +705,68 @@ function run() {
         updateAlert('Error requesting!', 15, alertType.error)
       });
 
+  }
+
+  function sendMessageGoogle(prompt, message = '', inital = false) {
+    let historyMessage;
+    if (printHistory && printHistory.length > 0) {
+      historyMessage = printHistory.filter(item => item.selected).map((item) => item.value).join('');
+      if (historyMessage && historyMessage.length != 0) message = historyMessage
+    }
+
+    async function run() {
+      // For text-only input, use the gemini-pro model
+      let parts = [{
+        "text": prompt + ". Your response should be clean and concise, formatted as a website HTML to be injected into innerHTML. It should be divided into sections and topics using HTML tags."
+      }]
+
+      if (message && message != '') {
+        parts.push({ 'text': message })
+      }
+
+      if (myRequest) {
+        parts.push({ 'text': myRequest })
+      }
+
+      if (selection) {
+        parts.push({ 'text': selection })
+      }
+
+      // Send the request to Gemini, ensuring proper JSON parsing
+      updateAlert('Requesting...!', null, alertType.success)
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' +
+        API_KEY,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            "contents": [{
+              "role": "user",
+              "parts": parts
+            }]
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.error) {
+        console.error("Gemini API Error:", data.error);
+      } else {
+        const extractedText = (data.candidates || [])
+          .map(candidate => candidate.content?.parts?.[0]?.text)
+          .filter(text => text !== undefined); console.log(extractedText);
+
+        // Process the generated HTML here
+        myResposes.set(myResposes.size, extractedText)
+        updatePagination()
+      }
+      updateAlert('')
+    }
+    run();
   }
   // Call readText initially and then use setInterval for repeated calls
   setTimeout(readText, 2000);
