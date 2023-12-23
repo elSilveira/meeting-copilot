@@ -292,6 +292,8 @@
 .my-paginator-view {
   display: flex;
   gap: 5px;
+  height: 21px;
+  align-items: center;
   justify-content: end;
   margin-top: -10px;
   background: #e4e3e3;
