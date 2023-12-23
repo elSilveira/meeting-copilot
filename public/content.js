@@ -25,7 +25,7 @@ let text = [];
 let selectedActor = '';
 let myRequest = ``;
 let myResposes = new Map();
-
+let selection = '';
 var alertType = {
   success: 'green',
   warning: 'yellow',
@@ -37,6 +37,27 @@ function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
     OPENAI_API_KEY = ev
   })
+
+  // Function to log selected text to console
+  function logSelectedText(selectedText) {
+    let inp = document.getElementById('txtSelectedInput');
+    selection = selectedText;
+    if (inp) { inp.innerHTML = selectedText == '' ? `Select something to use in the request...` : selectedText }
+  }
+
+  // Function to add event listener to the specified element by ID
+  function addTextSelectionListener(elementId) {
+    const element = document.getElementById(elementId);
+
+    if (element) {
+      element.addEventListener('mouseup', function () {
+        const selectedText = window.getSelection().toString().trim();
+        logSelectedText(selectedText);
+      });
+    } else {
+      console.error(`Element with ID '${elementId}' not found.`);
+    }
+  }
 
   function extractTextFromSpans(elements) {
     return elements.innerText;
@@ -95,7 +116,7 @@ function run() {
     let time;
 
     if (actual && actual.length > 0) {
-      let treating = actual[actual.length - 1]; size
+      let treating = actual[actual.length - 1];
       time = treating.time;
       history.get(teller).pop()
       nt = mergeStringsRemoveDuplicates(treating.value, nt)
@@ -203,7 +224,7 @@ function run() {
     inp.type = 'checkbox';
     inp.checked = selected;
 
-    par.onclick = () => {
+    inp.onclick = () => {
       selectItem(index);
       printText();
     };
@@ -320,6 +341,15 @@ function run() {
     return input
   }
 
+  function createSelectedInput() {
+    let input = document.createElement(`div`)
+    input.id = `txtSelectedInput`
+    input.contentEditable = true;
+    input.classList.add(`my-selected-input`)
+    input.innerText = `Select something to use in the request...`
+    return input
+  }
+
   function getView() {
     let myView = document.getElementById('myView');
     if (!myView) {
@@ -328,7 +358,6 @@ function run() {
       myView = document.createElement('div');
       myView.id = 'myView'
       myView.contentEditable = true;
-      myView.onkeydown = (ev) => { ev.stopPropagation; ev.preventDefault(); }
       myView.classList.add('my-view')
       myButtonsView.classList.add('my-btn-view')
       myMainView.classList.add('my-main-view')
@@ -341,10 +370,12 @@ function run() {
       myMainView.append(myView)
       myMainView.append(createAlert())
       myMainView.append(createInput())
+      myMainView.append(createSelectedInput())
       myButtonsView.append(createRequester())
       myButtonsView.append(createClear())
       myMainView.append(myButtonsView)
       document.body.appendChild(myMainView)
+      addTextSelectionListener('myView');
     }
     return myView
   }
@@ -534,24 +565,25 @@ function run() {
       myBotContentView = document.createElement('div');
       myBotContentView.id = 'myBotContentView'
       myBotContentView.classList.add(['my-content-bot-view'])
+      myBotContentView.contentEditable = true;
       myBotView = document.createElement('div');
       myBotView.id = 'myBotView'
       myBotView.classList.add(['my-bot-view'])
       myBotView.appendChild(myBotContentView)
       document.body.appendChild(myBotView)
+      addTextSelectionListener('myBotView');
     }
     return inside ? myBotContentView : myBotView
   }
 
   getView().innerHTML = ''
   function sendMessage(prompt, message = '', inital = false) {
-    let historyMessage = printHistory.filter(item => item.selected).map((item) => item.value).join('');
-    if (historyMessage && historyMessage.length != 0) message = historyMessage
-
-    if (message.length == 0 && myRequest == '') {
-      updateAlert('Select a message!', 15, alertType.warning)
-      return
+    let historyMessage;
+    if (printHistory && printHistory.length > 0) {
+      historyMessage = printHistory.filter(item => item.selected).map((item) => item.value).join('');
+      if (historyMessage && historyMessage.length != 0) message = historyMessage
     }
+
     let messages = [
       {
         "role": "system",
@@ -580,6 +612,22 @@ function run() {
         }
       )
     }
+
+    if (selection) {
+      messages.push(
+        {
+          "role": "user",
+          "content":
+            `${selection}`
+        }
+      )
+    }
+
+    if (messages.filter(m => m.role === 'user').length == 0) {
+      updateAlert('Please select or insert some content...!', null, alertType.warning)
+      return;
+    }
+
     updateAlert('Requesting...!', null, alertType.success)
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

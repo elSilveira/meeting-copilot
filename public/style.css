@@ -116,12 +116,11 @@
 
 .label-history {
   font-size: 12px;
-  cursor: pointer;
+  cursor: text;
   color: #171717;
 }
 
 .p-history {
-  cursor: pointer;
   display: flex;
   align-items: start;
   justify-content: start;
@@ -134,6 +133,7 @@
 
 .my-checkbox {
   margin-top: 2px;
+  cursor: pointer;
 }
 
 .iOzk7 {
@@ -245,4 +245,25 @@
 .my-paginator-view .btn {
   cursor: pointer;
   padding: 0 5px;
+}
+
+.my-selected-input {
+  margin: 0px 20px 10px;
+  border-radius: 7px;
+  border: 1px solid rgb(119 46 0);
+  padding: 4px 4px;
+  height: 17px;
+  box-shadow: 1px 1px 1px #000;
+  background: #dbdbdb;
+  font-size: 12px;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: scroll;
+  display: flex;
+  align-items: center;
+}
+
+.my-selected-input::-webkit-scrollbar {
+  height: 0;
+  width: 0;
 }
