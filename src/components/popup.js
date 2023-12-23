@@ -1,79 +1,93 @@
 /*global chrome*/
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import './popup.scss'; // Import the SCSS file
 
 function Popup() {
-  const [openAiKey, setOpenAiKey] = useState('');
+  const [aiKey, setAiKey] = useState('');
   const [savedAiKey, setSavedAiKey] = useState('');
-  const [gemniKey, setGemniKey] = useState('');
-  const [savedGemniKey, setSavedGemniKey] = useState('');
+  const [aiType, setAiType] = useState('');
 
-  chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
-    setSavedAiKey(ev)
-  })
+  useEffect(() => {
+    // Fetch the initial values from storage when the component mounts
+    chrome.runtime.sendMessage({ action: 'storage.get', type: 'apiType' }, (ev) => {
+      console.log('Type', ev)
+      setAiType(ev || ''); // Ensure a default value is set
+    });
+
+    chrome.runtime.sendMessage({ action: 'storage.get', type: 'apiKey' }, (ev) => {
+      console.log('Key', ev)
+      setSavedAiKey(ev); // Ensure a default value is set
+    });
+  }, []);
 
   const handleInputChange = (event) => {
-    setOpenAiKey(event.target.value);
+    setAiKey(event.target.value);
   };
 
-  const saveOpenAiKey = () => {
-    setSavedAiKey(openAiKey);
-    chrome.runtime.sendMessage({ action: 'storage.set', key: openAiKey });
-  };  
-
-  const clearOpenAiKey = () => {
-    setOpenAiKey('')
-    setSavedAiKey('')
-    chrome.runtime.sendMessage({ action: 'storage.delete' })
+  const saveAiKey = () => {
+    setSavedAiKey(aiKey);
+    chrome.runtime.sendMessage({ action: 'storage.set', key: aiKey });
   };
 
-  const handleGemniInputChange = (event) => {
-    setSavedGemniKey(event.target.value);
+  const clearAiKey = () => {
+    setAiKey('');
+    setSavedAiKey('');
+    chrome.runtime.sendMessage({ action: 'storage.delete' });
   };
 
-  const saveGemniKey = () => {
-    setSavedGemniKey(gemniKey);
-    chrome.runtime.sendMessage({ action: 'storage.set', key: gemniKey });
+  const handleAiTypeChange = (event) => {
+    const newAiType = event.target.id;
+    setAiType(newAiType);
+    chrome.runtime.sendMessage({ action: 'storage.set', type: newAiType });
   };
-  
-  const clearGemniKey = () => {
-    setGemniKey('')
-    setSavedGemniKey('')
-    chrome.runtime.sendMessage({ action: 'storage.delete' })
-  };
-
-  if (savedAiKey) {
-    return (
-      <div>
-        <h1>You're all set!</h1>
-        <button onClick={clearOpenAiKey}>Clear OpenAI Key</button>
-        <button onClick={clearGemniKey}>Clear Google Key</button>
-      </div>
-    );
-  }
 
   return (
     <div>
-      <h1>Please insert your OpenAiKey:</h1>
-      <div>
-        <label htmlFor="openAiKeyInput">OpenAiKey:</label>
-        <input
-          type="text"
-          id="openAiKeyInput"
-          value={openAiKey}
-          onChange={handleInputChange}
-        />
-        <button onClick={saveOpenAiKey}>Save</button>
-      </div>
-      <div>
-        <label htmlFor="gemniKeyInput">Google Gemni Key:</label>
-        <input
-          type="text"
-          id="gemniKeyInput"
-          value={gemniKey}
-          onChange={handleGemniInputChange}
-        />
-        <button onClick={saveGemniKey}>Save</button>
-      </div>
+      {savedAiKey ? (
+        <div className='allset--container'>
+          <h1>You're all set!</h1>
+          <h4>{aiType}</h4>
+          <button onClick={clearAiKey}>Clear AI Key</button>
+        </div>
+      ) : (
+        <div className='insert--container'>
+          <h1>Please insert your AI Key:</h1>
+          <div className='insert--content'>
+            <label htmlFor="aiKeyInput">AI Key:</label>
+            <input
+              type="text"
+              id="aiKeyInput"
+              value={aiKey}
+              onChange={handleInputChange}
+            />
+            <div>
+              <div class="insert--radio">
+                <input
+                  type="radio"
+                  id="googleAi"
+                  name="contact"
+                  value="Google Gemni"
+                  checked={aiType === 'googleAi'}
+                  onChange={handleAiTypeChange}
+                />
+                <label htmlFor="googleAi">Google Gemni</label>
+              </div>
+              <div class="insert--radio">
+                <input
+                  type="radio"
+                  id="openAi"
+                  name="contact"
+                  value="OpenAi"
+                  checked={aiType === 'openAi'}
+                  onChange={handleAiTypeChange}
+                />
+                <label htmlFor="openAi">OpenAi</label>
+              </div>
+            </div>
+            <button onClick={saveAiKey}>Save</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -36,8 +36,8 @@
 .my-view {
   margin: 15px;
   width: 380px;
-  height: 250px;
-  padding: 20px;
+  padding: 50px 20px;
+  height: 200px;
   overflow-y: auto;
   scroll-behavior: auto;
   background: #f3f3f3b8;
@@ -60,8 +60,7 @@
   position: absolute;
   background: #f3f3f3b8;
   padding: 20px;
-  overflow-y: auto;
-  scroll-behavior: auto;
+  overflow: hidden;
   border-radius: 15px;
   resize: vertical;
   box-shadow: -8px 3px 10px #00000075;
@@ -270,6 +269,10 @@
 
 .my-content-bot-view {
   cursor: text;
+  overflow: auto;
+  height: 100%;
+  margin-top: 24px;
+  scroll-behavior: smooth;
 }
 
 .my-input {

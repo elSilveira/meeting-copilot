@@ -1,0 +1,42 @@
+.allset {
+  &--container {
+    width: 180px;
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+    h4{
+      margin: 0;
+      padding: 0;
+      text-transform: capitalize;
+    }
+    h1{
+      margin-bottom: 0;
+    }
+  }
+}
+.insert {
+  &--container {
+    width: 180px;
+    margin: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  &--content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  &--radio {
+    display: flex;
+    gap: 5px;
+    white-space: nowrap;
+  }
+}

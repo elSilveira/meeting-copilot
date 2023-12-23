@@ -1,5 +1,6 @@
 /*global chrome*/
 var API_KEY = "";
+var API_TYPE = "";
 let _url = window.location.href;
 if (_url.includes('meet.google') || _url.includes('teams.live') || _url.includes('teams.microsoft')) {
   run();
@@ -8,7 +9,10 @@ chrome.runtime.onMessage.addListener((event) => {
   if (event) {
     switch (event.action) {
       case 'storage.set':
-        API_KEY = event.key
+        if (event.key)
+          API_KEY = event.key
+        if (event.type)
+          API_TYPE = event.type
         break
       case 'storage.delete':
         API_KEY = ''
@@ -64,8 +68,11 @@ function makeElementDraggable(element, draggableArea) {
 }
 
 function run() {
-  chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
+  chrome.runtime.sendMessage({ action: 'storage.get', type: 'apiKey' }, (ev) => {
     API_KEY = ev
+  })
+  chrome.runtime.sendMessage({ action: 'storage.get', type: 'apiType' }, (ev) => {
+    API_TYPE = ev
   })
 
   // Function to log selected text to console
@@ -485,7 +492,7 @@ function run() {
       let myBtn = document.createElement('div');
       myBtn.id = btn.id
       myBtn.innerHTML = btn.text
-      myBtn.onclick = () => sendMessageGoogle(btn.prompt)
+      myBtn.onclick = () => sendMessage(btn.prompt)
       myBtn.classList.add('my-btn');
       myBtns.append(myBtn)
     })
@@ -618,7 +625,13 @@ function run() {
   }
 
   getView().innerHTML = ''
+
   function sendMessage(prompt, message = '', inital = false) {
+    if (API_TYPE == 'openAi') sendMessageOpenAi(prompt, message = '', inital = false)
+    else sendMessageGoogle(prompt, message = '', inital = false)
+  }
+
+  function sendMessageOpenAi(prompt, message = '', inital = false) {
     let historyMessage;
     if (printHistory && printHistory.length > 0) {
       historyMessage = printHistory.filter(item => item.selected).map((item) => item.value).join('');
@@ -669,7 +682,7 @@ function run() {
       return;
     }
 
-    updateAlert('Requesting...!', null, alertType.success)
+    updateAlert('Requesting to OpenAi...!', null, alertType.success)
     fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -706,7 +719,6 @@ function run() {
       });
 
   }
-
   function sendMessageGoogle(prompt, message = '', inital = false) {
     let historyMessage;
     if (printHistory && printHistory.length > 0) {
@@ -733,7 +745,7 @@ function run() {
       }
 
       // Send the request to Gemini, ensuring proper JSON parsing
-      updateAlert('Requesting...!', null, alertType.success)
+      updateAlert('Requesting to Google...!', null, alertType.success)
       const response = await fetch(
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' +
         API_KEY,
@@ -758,13 +770,13 @@ function run() {
       } else {
         const extractedText = (data.candidates || [])
           .map(candidate => candidate.content?.parts?.[0]?.text)
-          .filter(text => text !== undefined); console.log(extractedText);
+          .filter(text => text !== undefined);
 
         // Process the generated HTML here
-        myResposes.set(myResposes.size, extractedText)
+        myResposes.set(myResposes.size, extractedText.toString().replace('```html', ''))
         updatePagination()
+        updateAlert('')
       }
-      updateAlert('')
     }
     run();
   }

@@ -11,6 +11,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
+    "sass": "^1.69.5",
+    "sass-loader": "^13.3.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -34,7 +36,7 @@
         "src",
         "public"
       ],
-      "extensions": "js,jsx,css"
+      "extensions": "js,jsx,css,scss"
     }
   },
   "browserslist": {
