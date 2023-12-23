@@ -3,6 +3,8 @@
   right: 0;
   z-index: 9999999;
   position: absolute;
+  width: 450px;
+  transition: width 0.1s ease-in-out;
 }
 
 .collapse-button {
@@ -43,9 +45,12 @@
   resize: vertical;
   box-shadow: -8px 3px 10px #00000075;
   margin-bottom: -25px;
+  cursor: text;
+  transition: width 0.1s ease-in-out;
 }
 
 .my-bot-view {
+  transition: width 0.1s ease-in-out;
   margin: 15px;
   width: 380px;
   height: 250px;
@@ -100,11 +105,6 @@
   justify-content: initial;
 }
 
-.collapsed {
-  width: 0px !important;
-  padding: 0 !important;
-}
-
 .alert-msg {
   margin-bottom: 25px;
   display: flex;
@@ -141,14 +141,20 @@
 }
 
 .my-header {
+  width: 400px;
   position: absolute;
   display: flex;
   justify-content: end;
-  top: 25px;
-  right: 25px;
-  display: flex;
   align-items: center;
   gap: 10px;
+  cursor: grab;
+  border-radius: 25px 25px 0 0;
+  background: #c6c9cc;
+  top: 0;
+  right: 0;
+  margin-right: 13px;
+  padding: 0 11px;
+  transition: width 0.1s ease-in-out;
 }
 
 .my-header img {
@@ -157,7 +163,37 @@
   height: 21px;
 }
 
+.my-bot-view.collapsed {
+  width: 0 !important;
+  padding: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  top: auto !important;
+}
+
+.my-main-view.collapsed {
+  bottom: 5px !important;
+  right: 0 !important;
+  left: auto !important;
+  top: auto !important;
+}
+
 .collapsed .my-actors {
+  display: none;
+}
+
+.collapsed .my-bot-header {
+  width: 0 !important;
+  padding: 0 !important;
+}
+
+.collapsed .my-header {
+  width: 0 !important;
+  padding: 0 !important;
+}
+
+.collapsed #myExportBtn {
   display: none;
 }
 
@@ -213,11 +249,35 @@
   }
 }
 
+.my-bot-header {
+  height: 38px;
+  width: 417px;
+  min-width: 425px;
+  margin-right: 0;
+  padding: 0;
+  border-radius: 10px 10px 0 0;
+  position: absolute;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: 10px;
+  cursor: grab;
+  background: #c6c9cc;
+  top: 0;
+  right: 0;
+  transition: width 0.1s ease-in-out;
+}
+
+.my-content-bot-view {
+  cursor: text;
+}
+
 .my-input {
   margin: 0px 20px 10px;
   width: 396px;
   border-radius: 7px;
   padding: 5px;
+  transition: width 0.1s ease-in-out;
 }
 
 .my-editable-input {
@@ -240,6 +300,9 @@
   padding: 0px 5px;
   border-radius: 10px;
   box-shadow: 2px 2px 4px #00000087;
+  z-index: 99;
+  position: absolute;
+  right: 13px;
 }
 
 .my-paginator-view .btn {

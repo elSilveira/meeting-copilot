@@ -32,6 +32,36 @@ var alertType = {
   error: 'red'
 }
 
+function makeElementDraggable(element, draggableArea) {
+  let offsetX, offsetY, isDragging = false;
+
+  draggableArea.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - element.getBoundingClientRect().left;
+    offsetY = e.clientY - element.getBoundingClientRect().top;
+    element.style.cursor = 'grabbing'; // Set cursor to grabbing during drag
+  });
+
+  // Attach event listeners directly to the document
+  document.addEventListener('mousemove', handleMouseMove);
+  document.addEventListener('mouseup', handleMouseUp);
+
+  function handleMouseMove(e) {
+    if (isDragging) {
+      const x = e.clientX - offsetX;
+      const y = e.clientY - offsetY;
+      element.style.left = `${x}px`;
+      element.style.top = `${y}px`;
+    }
+  }
+
+  function handleMouseUp() {
+    if (isDragging) {
+      isDragging = false;
+      element.style.cursor = 'grab';
+    }
+  }
+}
 
 function run() {
   chrome.runtime.sendMessage({ action: 'storage.get' }, (ev) => {
@@ -344,7 +374,7 @@ function run() {
   function createSelectedInput() {
     let input = document.createElement(`div`)
     input.id = `txtSelectedInput`
-    input.contentEditable = true;
+    input.contentEditable = false;
     input.classList.add(`my-selected-input`)
     input.innerText = `Select something to use in the request...`
     return input
@@ -355,6 +385,7 @@ function run() {
     if (!myView) {
       let myButtonsView = document.createElement('div');
       let myMainView = document.createElement('div');
+      myMainView.draggable = true;
       myView = document.createElement('div');
       myView.id = 'myView'
       myView.contentEditable = true;
@@ -376,6 +407,7 @@ function run() {
       myMainView.append(myButtonsView)
       document.body.appendChild(myMainView)
       addTextSelectionListener('myView');
+      makeElementDraggable(myMainView, header);
     }
     return myView
   }
@@ -414,22 +446,27 @@ function run() {
     collapseView.classList.add('collapse-button');
     let collapseViewIc = document.createElement('div');
     collapseViewIc.classList.add('collapse-button-ic');
-    collapseViewIc.innerHTML = '>'
+    collapseViewIc.innerHTML = '>';
+
     collapseView.onclick = (ev) => {
       let toCollapse = document.querySelector('.my-bot-view')
       if (toCollapse) {
         if (toCollapse.className.includes('collapsed')) {
           toCollapse.classList.remove('collapsed')
+          toCollapse.style.width = '380px';
         }
         else {
           toCollapse.classList.add('collapsed')
+          toCollapse.style.width = '0';
         }
       }
       if (view.className.includes('collapsed')) {
         view.classList.remove('collapsed')
+        view.style.width = '450px';
       }
       else {
         view.classList.add('collapsed')
+        view.style.width = '0';
       }
     }
     collapseView.append(collapseViewIc)
@@ -562,6 +599,8 @@ function run() {
     let myBotView = document.getElementById('myBotView');
     let myBotContentView = document.getElementById('myBotContentView');
     if (!myBotView) {
+      let header = document.createElement(`div`)
+      header.classList.add(`my-bot-header`)
       myBotContentView = document.createElement('div');
       myBotContentView.id = 'myBotContentView'
       myBotContentView.classList.add(['my-content-bot-view'])
@@ -569,9 +608,11 @@ function run() {
       myBotView = document.createElement('div');
       myBotView.id = 'myBotView'
       myBotView.classList.add(['my-bot-view'])
+      myBotView.appendChild(header)
       myBotView.appendChild(myBotContentView)
       document.body.appendChild(myBotView)
       addTextSelectionListener('myBotView');
+      makeElementDraggable(myBotView, header);
     }
     return inside ? myBotContentView : myBotView
   }
