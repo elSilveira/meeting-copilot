@@ -2,9 +2,31 @@
   bottom: 5px;
   right: 0;
   z-index: 9999999;
-  position: absolute;
+  position: fixed;
   width: 450px;
   transition: width 0.1s ease-in-out;
+  color: #000;
+}
+
+.blLabel {
+  font-size: 10px;
+  color: #e69c52;
+  cursor: not-allowed;
+}
+
+.blBtn {
+  cursor: not-allowed;
+  margin-right: auto;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  position: absolute;
+  right: 75px;
+  top: 6px;
+}
+
+.bl-chat {
+  top: -34px;
 }
 
 .collapse-button {
@@ -13,19 +35,27 @@
   text-shadow: -2px -0.5px 3px #13111180;
   font-size: 20px;
   display: flex;
-  align-items: center;
   width: 18px;
+  position: absolute;
+  right: 30px;
+  background: #ecececba;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  top: 0px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
 }
 
-.collapse-button-ic {
-  transform: scaleY(2);
-  padding: 5px;
+.chat {
+  top: -40px;
 }
 
 .collapsed .collapse-button {
   width: 30px;
   transform: rotate(180deg);
-  background: #ecececba;
   border-radius: 0px 40% 54% 0;
   padding: 5px;
   right: 0px;
@@ -64,6 +94,7 @@
   border-radius: 15px;
   resize: vertical;
   box-shadow: -8px 3px 10px #00000075;
+  color: #000;
 }
 
 .my-btns {
@@ -94,7 +125,8 @@
 }
 
 #myClrBtn {
-  margin: 3px 10px;
+  margin-left: auto;
+  margin-right: 30px;
   width: auto;
 }
 
@@ -193,6 +225,10 @@
 }
 
 .collapsed #myExportBtn {
+  display: none;
+}
+
+.collapsed .blBtn {
   display: none;
 }
 

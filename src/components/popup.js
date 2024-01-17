@@ -4,6 +4,7 @@ import './popup.scss'; // Import the SCSS file
 
 function Popup() {
   const [aiKey, setAiKey] = useState('');
+  const [openedTab, setopenedTab] = useState('');
   const [savedAiKey, setSavedAiKey] = useState('');
   const [aiType, setAiType] = useState('');
 
@@ -18,6 +19,8 @@ function Popup() {
       console.log('Key', ev)
       setSavedAiKey(ev); // Ensure a default value is set
     });
+
+    getOpenedPage()
   }, []);
 
   const handleInputChange = (event) => {
@@ -41,6 +44,18 @@ function Popup() {
     chrome.runtime.sendMessage({ action: 'storage.set', type: newAiType });
   };
 
+  const unblock = () => {
+    getOpenedPage();
+    chrome.runtime.sendMessage({ action: 'unblock', page: openedTab });
+  };
+
+  const getOpenedPage = () => {
+    chrome.runtime.sendMessage({ action: 'getPage' }, (response) => {
+      console.log('Opened Page:', response);
+      setopenedTab(response ?? '')
+    });
+  };
+
   return (
     <div>
       {savedAiKey ? (
@@ -48,6 +63,9 @@ function Popup() {
           <h1>You're all set!</h1>
           <h4>{aiType}</h4>
           <button onClick={clearAiKey}>Clear AI Key</button>
+          <div>
+            <label className='unblock' onClick={unblock}>Unblock {openedTab}</label>
+          </div>
         </div>
       ) : (
         <div className='insert--container'>

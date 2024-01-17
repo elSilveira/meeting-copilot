@@ -1,10 +1,17 @@
 /*global chrome*/
 var API_KEY = "";
 var API_TYPE = "";
+var isMeetingRoom = false;
+var blocklist = [];
 let _url = window.location.href;
+let _host = window.location.hostname
 if (_url.includes('meet.google') || _url.includes('teams.live') || _url.includes('teams.microsoft')) {
-  run();
+  isMeetingRoom = true;
 }
+document.addEventListener("click", function () {
+  chrome.runtime.sendMessage({ action: 'setPage', url: _host });
+});
+
 chrome.runtime.onMessage.addListener((event) => {
   if (event) {
     switch (event.action) {
@@ -20,6 +27,18 @@ chrome.runtime.onMessage.addListener((event) => {
     }
   }
 })
+//Get Blocklist and run
+chrome.runtime.sendMessage({ action: 'storage.get', type: 'blocklist' }, (ev) => {
+  console.log(ev)
+  if (ev && ev.length > 0 &&
+    ev.filter((item) => {
+      return _url.includes(item);
+    }).length != 0) {
+    return
+  }
+  run()
+})
+
 let firstActivation = true;
 let history = new Map();
 let printHistory = [];
@@ -403,14 +422,20 @@ function run() {
       header.classList.add(`my-header`)
       header.append(actors())
       header.append(exporter())
-      header.append(collapseView(myMainView))
-      myMainView.append(header)
-      myMainView.append(myView)
+      if (isMeetingRoom) {
+        myMainView.append(header)
+        myMainView.append(myView)
+      }
+      myMainView.append(blocker())
+      myMainView.append(collapseView(myMainView))
+      myMainView.classList.add('collapsed')
+      myMainView.style.width = '0';
       myMainView.append(createAlert())
       myMainView.append(createInput())
       myMainView.append(createSelectedInput())
-      myButtonsView.append(createRequester())
-      myButtonsView.append(createClear())
+      if (isMeetingRoom)
+        myButtonsView.append(createRequester())
+      myButtonsView.append(createSend())
       myMainView.append(myButtonsView)
       document.body.appendChild(myMainView)
       addTextSelectionListener('myView');
@@ -451,6 +476,8 @@ function run() {
   function collapseView(view) {
     let collapseView = document.createElement('div');
     collapseView.classList.add('collapse-button');
+    collapseView.classList.add('collapsed')
+    if (isMeetingRoom) collapseView.classList.add('chat')
     let collapseViewIc = document.createElement('div');
     collapseViewIc.classList.add('collapse-button-ic');
     collapseViewIc.innerHTML = '>';
@@ -461,6 +488,10 @@ function run() {
         if (toCollapse.className.includes('collapsed')) {
           toCollapse.classList.remove('collapsed')
           toCollapse.style.width = '380px';
+          toCollapse.style.left = 'auto';
+          toCollapse.style.bottom = 'auto';
+          toCollapse.style.top = '5px';
+          toCollapse.style.right = '5px';
         }
         else {
           toCollapse.classList.add('collapsed')
@@ -470,6 +501,10 @@ function run() {
       if (view.className.includes('collapsed')) {
         view.classList.remove('collapsed')
         view.style.width = '450px';
+        view.style.bottom = '5px';
+        view.style.right = '5px';
+        view.style.top = 'auto';
+        view.style.left = 'auto';
       }
       else {
         view.classList.add('collapsed')
@@ -543,17 +578,54 @@ function run() {
     return myBtn
   }
 
-  function createClear() {
+  function blocker() {
+    let myBtn = document.createElement('div');
+    myBtn.classList.add("blBtn");
+    if (isMeetingRoom) myBtn.classList.add('bl-chat')
+    let blLabel = document.createElement('label');
+    blLabel.classList.add("blLabel");
+    blLabel.innerHTML = "Blackist this page"
+    myBtn.append(blLabel)
+
+    myBtn.id = 'myBlBtn';
+    myBtn.innerHTML += ` <svg fill="#000000" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+    width="18px" height="18px" viewBox="0 0 28.331 28.331"
+    xml:space="preserve">
+ <g>
+   <path d="M25.098,0.586h-0.734v2.02c0,0.67-0.545,1.212-1.213,1.212s-1.211-0.542-1.211-1.212v-2.02H19.87v2.02
+     c0,0.67-0.544,1.212-1.212,1.212c-0.669,0-1.211-0.542-1.211-1.212v-2.02h-2.07v2.02c0,0.67-0.543,1.212-1.212,1.212
+     s-1.212-0.542-1.212-1.212v-2.02h-2.07v2.02c0,0.67-0.542,1.212-1.211,1.212c-0.668,0-1.212-0.542-1.212-1.212v-2.02H6.39v2.02
+     c0,0.67-0.542,1.212-1.211,1.212c-0.668,0-1.212-0.542-1.212-1.212v-2.02H3.232C1.449,0.586,0,2.036,0,3.82v20.691
+     c0,1.784,1.449,3.234,3.232,3.234H25.1c1.782,0,3.231-1.45,3.231-3.234V3.82C28.33,2.036,26.881,0.586,25.098,0.586z M8.06,19.666
+     c-0.828,0-1.5-0.672-1.5-1.5s0.672-1.5,1.5-1.5s1.5,0.672,1.5,1.5S8.888,19.666,8.06,19.666z M8.06,15.666
+     c-0.828,0-1.5-0.672-1.5-1.5s0.672-1.5,1.5-1.5s1.5,0.672,1.5,1.5S8.888,15.666,8.06,15.666z M8.06,11.666
+     c-0.828,0-1.5-0.672-1.5-1.5s0.672-1.5,1.5-1.5s1.5,0.672,1.5,1.5S8.888,11.666,8.06,11.666z M20.768,19.166H12.56
+     c-0.552,0-1-0.447-1-1s0.448-1,1-1h8.208c0.553,0,1,0.447,1,1S21.32,19.166,20.768,19.166z M20.768,15.166H12.56
+     c-0.552,0-1-0.447-1-1s0.448-1,1-1h8.208c0.553,0,1,0.447,1,1S21.32,15.166,20.768,15.166z M20.768,11.166H12.56
+     c-0.552,0-1-0.447-1-1s0.448-1,1-1h8.208c0.553,0,1,0.447,1,1S21.32,11.166,20.768,11.166z"/>
+ </g>
+ </svg>`;
+    myBtn.onclick = () => {
+      blockPage()
+    }
+    return myBtn
+  }
+
+  function blockPage() {
+    chrome.runtime.sendMessage({ action: 'storage.set', blocklist: [_host] });
+    let mv = document.getElementsByClassName('my-bot-view')[0]
+    if (mv) mv.remove();
+    mv = document.getElementsByClassName('my-main-view')[0]
+    if (mv) mv.remove();
+  }
+
+  function createSend() {
     let myBtn = document.createElement('div');
     myBtn.id = 'myClrBtn'
-    myBtn.innerHTML = 'Clear'
+    myBtn.innerHTML = 'Send'
     myBtn.onclick = () => {
-      let sbs = document.querySelectorAll('.iTTPOb');
-      if (sbs) sbs.forEach(sb => sb.innerHTML = '')
-      getView().innerHTML = '';
-      history = new Map();
-      printHistory = new Map();
-      selectedHistory = [];
+      if (myRequest == '') return
+      sendMessage()
     }
     myBtn.classList.add('my-btn')
     return myBtn
@@ -614,7 +686,7 @@ function run() {
       myBotContentView.contentEditable = true;
       myBotView = document.createElement('div');
       myBotView.id = 'myBotView'
-      myBotView.classList.add(['my-bot-view'])
+      myBotView.classList.add('my-bot-view')
       myBotView.appendChild(header)
       myBotView.appendChild(myBotContentView)
       document.body.appendChild(myBotView)
@@ -638,14 +710,16 @@ function run() {
       if (historyMessage && historyMessage.length != 0) message = historyMessage
     }
 
-    let messages = [
-      {
-        "role": "system",
-        "content": `${prompt}. Your response have to be clean and concise, 
+    let messages = [];
+    if (prompt)
+      messages.push
+        ({
+          "role": "system",
+          "content": `${prompt}. Your response have to be clean and concise, 
         as a Website HTML to be injected on innerHtml,
         divide by sections, and topics, with HTML tags.`
-      }
-    ];
+        })
+
 
     if (message.length > 0) {
       messages.push(
@@ -726,7 +800,7 @@ function run() {
       if (historyMessage && historyMessage.length != 0) message = historyMessage
     }
 
-    async function run() {
+    async function runGoog() {
       // For text-only input, use the gemini-pro model
       let parts = [{
         "text": prompt + ". Your response should be clean and concise, formatted as a website HTML to be injected into innerHTML. It should be divided into sections and topics using HTML tags."
@@ -766,6 +840,7 @@ function run() {
       const data = await response.json();
 
       if (data.error) {
+        updateAlert('Error requesting on Google!', 15, alertType.error)
         console.error("Gemini API Error:", data.error);
       } else {
         const extractedText = (data.candidates || [])
@@ -778,7 +853,7 @@ function run() {
         updateAlert('')
       }
     }
-    run();
+    runGoog();
   }
   // Call readText initially and then use setInterval for repeated calls
   setTimeout(readText, 2000);
